@@ -1,0 +1,133 @@
+import React, { useState, useEffect } from 'react';
+
+function Customers() {
+  const [customers, setCustomers] = useState([]);
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    address: ''
+  });
+
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  useEffect(() => {
+    filterCustomers();
+  }, [searchTerm, customers]);
+
+  const loadCustomers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/customers', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setCustomers(data.customers || []);
+    } catch (error) {
+      console.error('Error loading customers:', error);
+    }
+  };
+
+  const filterCustomers = () => {
+    if (!searchTerm.trim()) {
+      setFilteredCustomers(customers);
+      return;
+    }
+
+    const term = searchTerm.toLowerCase();
+    const filtered = customers.filter(customer => {
+      const fullName = `${customer.firstName} ${customer.lastName}`.toLowerCase();
+      return fullName.includes(term) || 
+             customer.email.toLowerCase().includes(term) || 
+             customer.phone.toLowerCase().includes(term) ||
+             customer.address.toLowerCase().includes(term);
+    });
+
+    setFilteredCustomers(filtered);
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        setShowForm(false);
+        setFormData({ firstName: '', lastName: '', phone: '', email: '', address: '' });
+        loadCustomers();
+      }
+    } catch (error) {
+      console.error('Error saving customer:', error);
+    }
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+        <h1>Customers</h1>
+        <button onClick={() => setShowForm(true)} style={{ padding: '12px 24px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+          + Add Customer
+        </button>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="Search customers..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: '100%', padding: '12px', fontSize: '16px', border: '2px solid #ddd', borderRadius: '8px', boxSizing: 'border-box' }}
+        />
+      </div>
+
+      {showForm && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '500px' }}>
+            <h2>Add Customer</h2>
+            <form onSubmit={handleSubmit}>
+              <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }} />
+              <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }} />
+              <input type="tel" name="phone" placeholder="Phone" value={formData.phone} onChange={handleInputChange} required style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }} />
+              <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} required style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }} />
+              <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleInputChange} required style={{ width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }} />
+              <button type="button" onClick={() => setShowForm(false)} style={{ padding: '10px 20px', marginRight: '10px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+              <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <div>
+        {filteredCustomers.map(c => (
+          <div key={c.id} style={{ backgroundColor: 'white', padding: '20px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #ddd' }}>
+            <h3>{c.firstName} {c.lastName}</h3>
+            <p>📞 {c.phone}</p>
+            <p>📧 {c.email}</p>
+            <p>📍 {c.address}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default Customers;
