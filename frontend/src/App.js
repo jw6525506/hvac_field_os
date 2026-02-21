@@ -40,6 +40,16 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [showSignup, setShowSignup] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotMsg, setForgotMsg] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [showReset, setShowReset] = useState(false);
+  const [resetToken, setResetToken] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetConfirm, setResetConfirm] = useState('');
+  const [resetMsg, setResetMsg] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
   const [company, setCompany] = useState(null);
   const [billingStatus, setBillingStatus] = useState(null);
   const [dashData, setDashData] = useState({
@@ -62,6 +72,13 @@ function App() {
         localStorage.removeItem('user');
         localStorage.removeItem('company');
       }
+    }
+    // Check for password reset token in URL
+    const params = new URLSearchParams(window.location.search);
+    const resetT = params.get('reset');
+    if (resetT) {
+      setResetToken(resetT);
+      setShowReset(true);
     }
     setCheckingAuth(false);
   }, []);
@@ -147,6 +164,49 @@ function App() {
     } finally { setLoading(false); }
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const data = await res.json();
+      setForgotMsg(data.message || 'Reset link sent!');
+    } catch (err) {
+      setForgotMsg('Failed to send reset email.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (resetPassword !== resetConfirm) { setResetMsg('Passwords do not match'); return; }
+    if (resetPassword.length < 8) { setResetMsg('Password must be at least 8 characters'); return; }
+    setResetLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: resetToken, password: resetPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setResetMsg(data.message || 'Reset failed'); return; }
+      setResetMsg('Password reset successfully! You can now sign in.');
+      setTimeout(() => {
+        setShowReset(false);
+        window.history.replaceState({}, '', '/');
+      }, 2000);
+    } catch (err) {
+      setResetMsg('Failed to reset password.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     setUser(null); setCompany(null); setBillingStatus(null);
     setCurrentPage('dashboard');
@@ -171,6 +231,77 @@ function App() {
 
   if (showSignup) return <Signup onSignupSuccess={handleSignupSuccess} />;
 
+  if (showReset) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', fontFamily: 'Segoe UI, sans-serif' }}>
+      <div style={{ width: '100%', maxWidth: '420px', padding: '0 20px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>HVAC Field OS</h1>
+          <p style={{ color: '#94a3b8', margin: 0 }}>Set your new password</p>
+        </div>
+        <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '36px', border: '1px solid #334155' }}>
+          <form onSubmit={handleResetPassword}>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase' }}>New Password</label>
+              <input type="password" value={resetPassword} onChange={e => setResetPassword(e.target.value)} placeholder="Min 8 characters" required
+                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: '2px solid #334155', borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0f172a', color: 'white', outline: 'none' }} />
+            </div>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase' }}>Confirm Password</label>
+              <input type="password" value={resetConfirm} onChange={e => setResetConfirm(e.target.value)} placeholder="Repeat password" required
+                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: '2px solid #334155', borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0f172a', color: 'white', outline: 'none' }} />
+            </div>
+            {resetMsg && <div style={{ padding: '12px', marginBottom: '16px', backgroundColor: resetMsg.includes('successfully') ? '#f0fdf4' : '#fff1f2', color: resetMsg.includes('successfully') ? '#15803d' : '#e11d48', borderRadius: '8px', fontSize: '14px' }}>{resetMsg}</div>}
+            <button type="submit" disabled={resetLoading}
+              style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: resetLoading ? '#334155' : '#2563eb', border: 'none', borderRadius: '8px', cursor: resetLoading ? 'default' : 'pointer' }}>
+              {resetLoading ? 'Resetting...' : 'Reset Password'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (showForgot) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', fontFamily: 'Segoe UI, sans-serif' }}>
+      <div style={{ width: '100%', maxWidth: '420px', padding: '0 20px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>HVAC Field OS</h1>
+          <p style={{ color: '#94a3b8', margin: 0 }}>Reset your password</p>
+        </div>
+        <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '36px', border: '1px solid #334155' }}>
+          {!forgotMsg ? (
+            <form onSubmit={handleForgotPassword}>
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase' }}>Your Email</label>
+                <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="you@example.com" required
+                  style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: '2px solid #334155', borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0f172a', color: 'white', outline: 'none' }} />
+              </div>
+              <button type="submit" disabled={forgotLoading}
+                style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: forgotLoading ? '#334155' : '#2563eb', border: 'none', borderRadius: '8px', cursor: forgotLoading ? 'default' : 'pointer', marginBottom: '12px' }}>
+                {forgotLoading ? 'Sending...' : 'Send Reset Link'}
+              </button>
+              <button type="button" onClick={() => setShowForgot(false)}
+                style={{ width: '100%', padding: '12px', fontSize: '14px', fontWeight: '600', color: '#94a3b8', backgroundColor: 'transparent', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer' }}>
+                Back to Sign In
+              </button>
+            </form>
+          ) : (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📧</div>
+              <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>{forgotMsg}</p>
+              <button onClick={() => { setShowForgot(false); setForgotMsg(''); setForgotEmail(''); }}
+                style={{ width: '100%', padding: '12px', fontSize: '14px', fontWeight: '600', color: 'white', backgroundColor: '#2563eb', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                Back to Sign In
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   if (!user) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', fontFamily: 'Segoe UI, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '420px', padding: '0 20px' }}>
@@ -192,6 +323,12 @@ function App() {
                 style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: `2px solid ${error ? '#e11d48' : '#334155'}`, borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0f172a', color: 'white', outline: 'none' }} />
             </div>
             {error && <div style={{ padding: '12px 14px', marginBottom: '20px', backgroundColor: '#fff1f2', color: '#e11d48', borderRadius: '8px', fontSize: '14px', fontWeight: '500' }}>⚠️ {error}</div>}
+            <div style={{ textAlign: 'right', marginTop: '-16px', marginBottom: '16px' }}>
+              <button type="button" onClick={() => setShowForgot(true)}
+                style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+                Forgot password?
+              </button>
+            </div>
             <button type="submit" disabled={loading}
               style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: loading ? '#334155' : '#2563eb', border: 'none', borderRadius: '8px', cursor: loading ? 'default' : 'pointer' }}>
               {loading ? 'Signing in' : 'Sign In'}

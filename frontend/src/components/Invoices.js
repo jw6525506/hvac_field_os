@@ -29,6 +29,7 @@ const S = {
   cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' },
   badge: (color, bg) => ({ display: 'inline-block', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', color, backgroundColor: bg }),
   actionBtns: { display: 'flex', gap: '8px' },
+  emailBtn: { padding: '7px 14px', backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '7px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
   markPaidBtn: { padding: '7px 14px', backgroundColor: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
   markUnpaidBtn: { padding: '7px 14px', backgroundColor: '#fef9c3', color: '#a16207', border: '1px solid #fef08a', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
   deleteBtn: { padding: '7px 14px', backgroundColor: '#fff1f2', color: '#e11d48', border: '1px solid #fecdd3', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' },
@@ -160,6 +161,21 @@ export default function Invoices() {
       showToast(`Marked as ${status}.`);
     } catch (err) {
       showToast(err.message, 'error');
+    }
+  };
+
+  const handleEmailInvoice = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/invoices/${id}/email`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.message || 'Failed to send email'); return; }
+      showToast('Invoice emailed successfully!');
+    } catch (err) {
+      showToast('Failed to send email.');
     }
   };
 
@@ -296,6 +312,7 @@ export default function Invoices() {
                   {inv.status === 'paid' && (
                     <button style={S.markUnpaidBtn} onClick={() => handleStatusChange(inv.id, 'unpaid')}>↩ Mark Unpaid</button>
                   )}
+                  <button style={S.emailBtn} onClick={() => handleEmailInvoice(inv.id)}>📧 Email</button>
                   <button style={S.deleteBtn} onClick={() => setDeleteTarget(inv)}>Delete</button>
                 </div>
               </div>

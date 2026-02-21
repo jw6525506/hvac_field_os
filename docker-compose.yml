@@ -37,6 +37,7 @@ services:
       BASIC_PRICE_ID: price_1T39bbCw5vTJDAl1VWvvN0KG
       PRO_PRICE_ID: price_1T39bcCw5vTJDAl1x1ncmLkj
       ENTERPRISE_PRICE_ID: price_1T39bdCw5vTJDAl1WQFwOSTR
+      RESEND_API_KEY: re_XqcoLPiZ_Z6QXArMc9FtBvrEGpNZ3wLKh
     ports:
       - "3000:3000"
     depends_on:
