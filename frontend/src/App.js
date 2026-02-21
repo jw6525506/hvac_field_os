@@ -4,6 +4,7 @@ import Customers from './components/Customers';
 import WorkOrders from './components/WorkOrders';
 import Invoices from './components/Invoices';
 import Billing from './components/Billing';
+import Signup from './components/Signup';
 
 const API_BASE = 'http://localhost:3000/api';
 
@@ -15,6 +16,7 @@ function App() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [showSignup, setShowSignup] = useState(false);
   const [company, setCompany] = useState(null);
   const [billingStatus, setBillingStatus] = useState(null);
   const [dashData, setDashData] = useState({
@@ -130,11 +132,21 @@ function App() {
     localStorage.removeItem('company');
   };
 
+  const handleSignupSuccess = (newUser, newCompany) => {
+    if (newUser) {
+      setUser(newUser);
+      setCompany(newCompany);
+    }
+    setShowSignup(false);
+  };
+
   if (checkingAuth) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a' }}>
       <p style={{ color: 'white', fontSize: '18px' }}>Loading</p>
     </div>
   );
+
+  if (showSignup) return <Signup onSignupSuccess={handleSignupSuccess} />;
 
   if (!user) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', fontFamily: 'Segoe UI, sans-serif' }}>
@@ -162,6 +174,13 @@ function App() {
               {loading ? 'Signing in' : 'Sign In'}
             </button>
           </form>
+          <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #334155' }}>
+            <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#64748b' }}>New HVAC company?</p>
+            <button onClick={() => setShowSignup(true)}
+              style={{ width: '100%', padding: '12px', fontSize: '14px', fontWeight: '700', color: '#2563eb', backgroundColor: 'transparent', border: '2px solid #2563eb', borderRadius: '8px', cursor: 'pointer' }}>
+              Start Free 14-Day Trial
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -352,7 +371,6 @@ function App() {
                   );
                 })}
               </div>
-
               <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1a2332' }}>Recent Customers</h2>
