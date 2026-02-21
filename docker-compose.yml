@@ -40,6 +40,8 @@ services:
       RESEND_API_KEY: re_XqcoLPiZ_Z6QXArMc9FtBvrEGpNZ3wLKh
     ports:
       - "3000:3000"
+    volumes:
+      - ./backend/uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy

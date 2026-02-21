@@ -132,6 +132,47 @@ export default function WorkOrders() {
     }
   };
 
+  const [photoTarget, setPhotoTarget] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handlePhotoUpload = async (woId, files) => {
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach(f => formData.append('photos', f));
+      const res = await fetch(`${API_BASE}/work-orders/${woId}/photos`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.message || 'Upload failed'); return; }
+      setWorkOrders(prev => prev.map(wo => wo.id === woId ? { ...wo, photos: data.photos } : wo));
+      setPhotoTarget(prev => prev ? { ...prev, photos: data.photos } : prev);
+    } catch (err) {
+      alert('Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handlePhotoDelete = async (woId, filename) => {
+    if (!window.confirm('Delete this photo?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/work-orders/${woId}/photos/${filename}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.message || 'Delete failed'); return; }
+      setWorkOrders(prev => prev.map(wo => wo.id === woId ? { ...wo, photos: data.photos } : wo));
+      setPhotoTarget(prev => prev ? { ...prev, photos: data.photos } : prev);
+    } catch (err) {
+      alert('Delete failed');
+    }
+  };
+
   const handleStatusUpdate = async (id, status) => {
     try {
       const res = await fetch(`${API_BASE}/work-orders/${id}/status`, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ status }) });
@@ -208,6 +249,10 @@ export default function WorkOrders() {
                 </div>
                 <div style={S.cardActions}>
                   <button style={S.editBtn} onClick={() => openEdit(wo)}>Edit</button>
+                  <button onClick={() => setPhotoTarget(wo)}
+                    style={{ padding: '7px 14px', backgroundColor: '#f0fdf4', color: '#15803d', border: '1px solid #86efac', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+                    📷 {wo.photos && wo.photos.length > 0 ? `Photos (${wo.photos.length})` : 'Photos'}
+                  </button>
                   <button style={S.deleteBtn} onClick={() => setDeleteTarget(wo)}>Delete</button>
                 </div>
               </div>
@@ -302,6 +347,50 @@ export default function WorkOrders() {
         </div>
       )}
 
+
+      {/* Photo Modal */}
+      {photoTarget && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+          onClick={e => e.target === e.currentTarget && setPhotoTarget(null)}>
+          <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1a2332' }}>
+                📷 Photos — {photoTarget.jobType}
+              </h2>
+              <button onClick={() => setPhotoTarget(null)}
+                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#64748b' }}>✕</button>
+            </div>
+            <label style={{ display: 'block', padding: '20px', border: '2px dashed #e2e8f0', borderRadius: '12px', textAlign: 'center', cursor: 'pointer', marginBottom: '20px', backgroundColor: '#f8fafc' }}>
+              <input type="file" multiple accept="image/*" style={{ display: 'none' }}
+                onChange={e => handlePhotoUpload(photoTarget.id, e.target.files)} />
+              {uploading ? (
+                <p style={{ margin: 0, color: '#64748b' }}>Uploading...</p>
+              ) : (
+                <>
+                  <p style={{ margin: '0 0 4px', fontSize: '16px' }}>📁</p>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Click to upload photos (max 10MB each)</p>
+                </>
+              )}
+            </label>
+            {photoTarget.photos && photoTarget.photos.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                {photoTarget.photos.map((photo, idx) => (
+                  <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', backgroundColor: '#f1f5f9' }}>
+                    <img src={`http://localhost:3000${photo.url}`} alt={photo.originalName}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <button onClick={() => handlePhotoDelete(photoTarget.id, photo.filename)}
+                      style={{ position: 'absolute', top: '6px', right: '6px', width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '14px', padding: '20px 0' }}>No photos yet — upload some above</p>
+            )}
+          </div>
+        </div>
+      )}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );

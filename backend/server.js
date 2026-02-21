@@ -7,6 +7,26 @@ const crypto = require('crypto');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, '/app/uploads/'),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|gif|webp/;
+    const ok = allowed.test(path.extname(file.originalname).toLowerCase()) && allowed.test(file.mimetype);
+    ok ? cb(null, true) : cb(new Error('Images only'));
+  },
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,6 +58,8 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   next();
 });
+
+app.use('/uploads', express.static('/app/uploads'));
 
 // ─── AUTH MIDDLEWARE ──────────────────────────────────────
 
@@ -674,6 +696,45 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Email invoice error:', err.message);
     res.status(500).json({ message: 'Failed to send email: ' + err.message });
+  }
+});
+
+// ─── PHOTO UPLOADS ───────────────────────────────────────
+
+app.post('/api/work-orders/:id/photos', requireAuth, upload.array('photos', 10), async (req, res) => {
+  try {
+    const woResult = await pool.query('SELECT * FROM "WorkOrders" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    if (woResult.rows.length === 0) return res.status(404).json({ message: 'Work order not found' });
+    const wo = woResult.rows[0];
+    const existingPhotos = wo.photos || [];
+    const newPhotos = req.files.map(f => ({
+      filename: f.filename,
+      originalName: f.originalname,
+      url: `/uploads/${f.filename}`,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: req.user.id,
+    }));
+    const allPhotos = [...existingPhotos, ...newPhotos];
+    await pool.query('UPDATE "WorkOrders" SET photos=$1, "updatedAt"=NOW() WHERE id=$2', [JSON.stringify(allPhotos), req.params.id]);
+    res.json({ message: 'Photos uploaded', photos: allPhotos });
+  } catch (err) {
+    console.error('Photo upload error:', err.message);
+    res.status(500).json({ message: 'Failed to upload photos' });
+  }
+});
+
+app.delete('/api/work-orders/:id/photos/:filename', requireAuth, async (req, res) => {
+  try {
+    const woResult = await pool.query('SELECT * FROM "WorkOrders" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    if (woResult.rows.length === 0) return res.status(404).json({ message: 'Work order not found' });
+    const wo = woResult.rows[0];
+    const photos = (wo.photos || []).filter(p => p.filename !== req.params.filename);
+    await pool.query('UPDATE "WorkOrders" SET photos=$1, "updatedAt"=NOW() WHERE id=$2', [JSON.stringify(photos), req.params.id]);
+    const filePath = `/app/uploads/${req.params.filename}`;
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    res.json({ message: 'Photo deleted', photos });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete photo' });
   }
 });
 
