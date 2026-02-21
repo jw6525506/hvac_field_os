@@ -5,6 +5,7 @@ import WorkOrders from './components/WorkOrders';
 import Invoices from './components/Invoices';
 import Billing from './components/Billing';
 import Signup from './components/Signup';
+import Users from './components/Users';
 
 const API_BASE = 'http://localhost:3000/api';
 
@@ -417,11 +418,7 @@ function App() {
         {currentPage === 'workorders' && <WorkOrders />}
         {currentPage === 'invoices' && <Invoices />}
         {currentPage === 'billing' && <Billing currentUser={user} />}
-        {currentPage === 'users' && user.role === 'admin' && (
-          <div style={{ padding: '32px' }}>
-            <h1 style={{ color: '#1a2332' }}>Team Management coming soon</h1>
-          </div>
-        )}
+        {currentPage === 'users' && user.role === 'admin' && <Users />}
       </div>
     </div>
   );
