@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,10 @@ pool.connect((err, client, release) => {
   }
 });
 
+// Raw body needed for Stripe webhooks
+app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
+app.use(express.json());
+
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
@@ -31,8 +36,6 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   next();
 });
-
-app.use(express.json());
 
 // ─── AUTH MIDDLEWARE ──────────────────────────────────────
 
@@ -87,7 +90,6 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Get company info
     let company = null;
     if (user.companyId) {
       const companyResult = await pool.query('SELECT * FROM "Companies" WHERE id = $1', [user.companyId]);
@@ -125,23 +127,28 @@ app.post('/api/auth/register-company', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-
-    // Check if email already exists
     const existing = await client.query('SELECT id FROM "Users" WHERE email = $1', [email]);
     if (existing.rows.length > 0) {
       await client.query('ROLLBACK');
       return res.status(400).json({ message: 'Email already in use' });
     }
 
-    // Create company
+    // Create Stripe customer for the company
+    const stripeCustomer = await stripe.customers.create({
+      email: companyEmail || email,
+      name: companyName,
+    });
+
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
     const companyResult = await client.query(
-      `INSERT INTO "Companies" (name, email, phone, plan, "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, 'trial', NOW(), NOW()) RETURNING *`,
-      [companyName, companyEmail || email, companyPhone || null]
+      `INSERT INTO "Companies" (name, email, phone, plan, "stripeCustomerId", "trialEndsAt", active, "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, 'trial', $4, $5, true, NOW(), NOW()) RETURNING *`,
+      [companyName, companyEmail || email, companyPhone || null, stripeCustomer.id, trialEndsAt]
     );
     const company = companyResult.rows[0];
 
-    // Create admin user for company
     const hashedPassword = await bcrypt.hash(password, 10);
     const userResult = await client.query(
       `INSERT INTO "Users" ("firstName", "lastName", email, password, role, "companyId", "createdAt", "updatedAt")
@@ -149,7 +156,6 @@ app.post('/api/auth/register-company', async (req, res) => {
       [firstName, lastName, email, hashedPassword, company.id]
     );
     const user = userResult.rows[0];
-
     await client.query('COMMIT');
 
     const token = jwt.sign(
@@ -157,7 +163,6 @@ app.post('/api/auth/register-company', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-
     res.json({
       token,
       user: { id: user.id, email, firstName, lastName, role: 'admin', companyId: company.id },
@@ -169,6 +174,178 @@ app.post('/api/auth/register-company', async (req, res) => {
     res.status(500).json({ message: 'Server error during registration' });
   } finally {
     client.release();
+  }
+});
+
+// ─── BILLING ─────────────────────────────────────────────
+
+app.get('/api/billing/plans', (req, res) => {
+  res.json({
+    plans: [
+      {
+        id: 'basic',
+        name: 'Basic',
+        price: 79,
+        priceId: process.env.BASIC_PRICE_ID,
+        description: 'Perfect for small HVAC companies',
+        features: ['Up to 3 users', 'Customers & Work Orders', 'Invoicing', 'Email support'],
+      },
+      {
+        id: 'pro',
+        name: 'Pro',
+        price: 149,
+        priceId: process.env.PRO_PRICE_ID,
+        description: 'For growing HVAC businesses',
+        features: ['Unlimited users', 'All Basic features', 'Advanced dashboard', 'Priority support'],
+        popular: true,
+      },
+      {
+        id: 'enterprise',
+        name: 'Enterprise',
+        price: 299,
+        priceId: process.env.ENTERPRISE_PRICE_ID,
+        description: 'For large operations',
+        features: ['Everything in Pro', 'Custom integrations', 'Dedicated support', 'SLA guarantee'],
+      },
+    ],
+  });
+});
+
+app.post('/api/billing/checkout', requireAuth, requireAdmin, async (req, res) => {
+  const { priceId } = req.body;
+  try {
+    const companyResult = await pool.query('SELECT * FROM "Companies" WHERE id = $1', [req.user.companyId]);
+    const company = companyResult.rows[0];
+
+    let customerId = company.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: company.email,
+        name: company.name,
+      });
+      customerId = customer.id;
+      await pool.query('UPDATE "Companies" SET "stripeCustomerId" = $1 WHERE id = $2', [customerId, company.id]);
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [{ price: priceId, quantity: 1 }],
+      mode: 'subscription',
+      success_url: `http://localhost:3001?billing=success`,
+      cancel_url: `http://localhost:3001?billing=cancelled`,
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('Checkout error:', err.message);
+    res.status(500).json({ message: 'Failed to create checkout session' });
+  }
+});
+
+app.post('/api/billing/portal', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const companyResult = await pool.query('SELECT * FROM "Companies" WHERE id = $1', [req.user.companyId]);
+    const company = companyResult.rows[0];
+    if (!company.stripeCustomerId) {
+      return res.status(400).json({ message: 'No billing account found' });
+    }
+    const session = await stripe.billingPortal.sessions.create({
+      customer: company.stripeCustomerId,
+      return_url: 'http://localhost:3001',
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('Portal error:', err.message);
+    res.status(500).json({ message: 'Failed to open billing portal' });
+  }
+});
+
+app.get('/api/billing/status', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM "Companies" WHERE id = $1', [req.user.companyId]);
+    const company = result.rows[0];
+    if (!company) return res.status(404).json({ message: 'Company not found' });
+
+    const now = new Date();
+    const trialEndsAt = company.trialEndsAt ? new Date(company.trialEndsAt) : null;
+    const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((trialEndsAt - now) / (1000 * 60 * 60 * 24))) : 0;
+    const trialExpired = trialEndsAt ? now > trialEndsAt : false;
+    const isActive = company.plan !== 'trial' || !trialExpired;
+
+    res.json({
+      plan: company.plan,
+      active: isActive,
+      trialEndsAt: company.trialEndsAt,
+      trialDaysLeft,
+      trialExpired,
+      stripeCustomerId: company.stripeCustomerId,
+    });
+  } catch (err) {
+    console.error('Billing status error:', err.message);
+    res.status(500).json({ message: 'Failed to get billing status' });
+  }
+});
+
+// Stripe webhook
+app.post('/api/billing/webhook', async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error('Webhook error:', err.message);
+    return res.status(400).json({ message: `Webhook error: ${err.message}` });
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const subscription = await stripe.subscriptions.retrieve(session.subscription);
+        const priceId = subscription.items.data[0].price.id;
+        let plan = 'basic';
+        if (priceId === process.env.PRO_PRICE_ID) plan = 'pro';
+        if (priceId === process.env.ENTERPRISE_PRICE_ID) plan = 'enterprise';
+        await pool.query(
+          'UPDATE "Companies" SET plan=$1, "stripeSubscriptionId"=$2, active=true, "updatedAt"=NOW() WHERE "stripeCustomerId"=$3',
+          [plan, subscription.id, session.customer]
+        );
+        console.log(`✅ Company upgraded to ${plan}`);
+        break;
+      }
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+        await pool.query(
+          'UPDATE "Companies" SET plan=\'trial\', "stripeSubscriptionId"=NULL, active=false, "updatedAt"=NOW() WHERE "stripeCustomerId"=$1',
+          [subscription.customer]
+        );
+        console.log('❌ Subscription cancelled — company deactivated');
+        break;
+      }
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        await pool.query(
+          'UPDATE "Companies" SET active=false, "updatedAt"=NOW() WHERE "stripeCustomerId"=$1',
+          [invoice.customer]
+        );
+        console.log('⚠️ Payment failed — company deactivated');
+        break;
+      }
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object;
+        await pool.query(
+          'UPDATE "Companies" SET active=true, "updatedAt"=NOW() WHERE "stripeCustomerId"=$1',
+          [invoice.customer]
+        );
+        console.log('✅ Payment succeeded — company reactivated');
+        break;
+      }
+    }
+    res.json({ received: true });
+  } catch (err) {
+    console.error('Webhook handler error:', err.message);
+    res.status(500).json({ message: 'Webhook handler failed' });
   }
 });
 
@@ -189,8 +366,7 @@ app.put('/api/company', requireAuth, requireAdmin, async (req, res) => {
   const { name, email, phone, address } = req.body;
   try {
     const result = await pool.query(
-      `UPDATE "Companies" SET name=$1, email=$2, phone=$3, address=$4, "updatedAt"=NOW()
-       WHERE id=$5 RETURNING *`,
+      `UPDATE "Companies" SET name=$1, email=$2, phone=$3, address=$4, "updatedAt"=NOW() WHERE id=$5 RETURNING *`,
       [name, email, phone, address, req.user.companyId]
     );
     res.json({ company: result.rows[0] });
@@ -357,7 +533,6 @@ app.get('/api/work-orders', requireAuth, async (req, res) => {
   try {
     let query, params;
     if (req.user.role === 'technician') {
-      // Technicians only see their own assigned jobs
       query = `
         SELECT wo.*, c."firstName", c."lastName"
         FROM "WorkOrders" wo
@@ -367,7 +542,6 @@ app.get('/api/work-orders', requireAuth, async (req, res) => {
       `;
       params = [req.user.companyId, req.user.id];
     } else {
-      // Admins see all jobs for their company
       query = `
         SELECT wo.*, c."firstName", c."lastName"
         FROM "WorkOrders" wo
@@ -514,5 +688,6 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('Database: PostgreSQL (hvac_field_os)');
   console.log('Auth: JWT + Multi-tenant enabled');
+  console.log('Billing: Stripe enabled');
   console.log('========================================');
 });

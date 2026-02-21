@@ -31,6 +31,12 @@ services:
       JWT_SECRET: hvac_super_secret_key_2026
       PORT: 3000
       NODE_ENV: production
+      STRIPE_SECRET_KEY: sk_test_51T39IZCw5vTJDAl1FgCuziLS8KZmKC3Tw4kB10WuwFklP40kr8DjZOdl0N2V5e5keRUD61EP8GyIxrSAHEfj1sNu00rd3jZu8L
+      STRIPE_PUBLISHABLE_KEY: pk_test_51T39IZCw5vTJDAl1jiqZndyMDcFAtvLIhBL2e3fQPvD2PNfRTyl8b4yYvm04DaFMUU5MZuiVvmbwfuFgldSkK8TL003Ji1KSN7
+      STRIPE_WEBHOOK_SECRET: whsec_placeholder_for_now
+      BASIC_PRICE_ID: price_1T39bbCw5vTJDAl1VWvvN0KG
+      PRO_PRICE_ID: price_1T39bcCw5vTJDAl1x1ncmLkj
+      ENTERPRISE_PRICE_ID: price_1T39bdCw5vTJDAl1WQFwOSTR
     ports:
       - "3000:3000"
     depends_on:
