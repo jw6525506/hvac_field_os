@@ -1,0 +1,76 @@
+/* Mobile responsive styles */
+
+@media (max-width: 768px) {
+
+  /* Hide sidebar, show bottom nav instead */
+  .sidebar {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding-bottom: 70px !important;
+  }
+
+  /* Bottom navigation bar */
+  .bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    backgroundColor: #0f172a;
+    borderTop: 1px solid #1e293b;
+    zIndex: 999;
+    height: 60px;
+  }
+
+  /* Dashboard grid adjustments */
+  .dash-grid-4 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .dash-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dash-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dash-grid-charts {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Padding adjustments */
+  .page-padding {
+    padding: 16px !important;
+  }
+
+  /* Table horizontal scroll */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Form grids go single column */
+  .form-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Billing cards stack */
+  .billing-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stat cards smaller text */
+  .stat-value {
+    font-size: 22px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+}

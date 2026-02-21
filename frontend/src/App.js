@@ -6,8 +6,30 @@ import Invoices from './components/Invoices';
 import Billing from './components/Billing';
 import Signup from './components/Signup';
 import Users from './components/Users';
+import BottomNav from './components/BottomNav';
 
 const API_BASE = 'http://localhost:3000/api';
+
+if (!document.getElementById('mobile-styles')) {
+  const s = document.createElement('style');
+  s.id = 'mobile-styles';
+  s.innerHTML = `
+    @media (max-width: 768px) {
+      .sidebar-desktop { display: none !important; }
+      .bottom-nav { display: grid !important; }
+      .main-content { padding-bottom: 70px !important; }
+      .grid-4 { grid-template-columns: 1fr 1fr !important; }
+      .grid-3 { grid-template-columns: 1fr !important; }
+      .grid-2 { grid-template-columns: 1fr !important; }
+      .grid-charts { grid-template-columns: 1fr !important; }
+      .page-pad { padding: 16px !important; }
+    }
+    @media (max-width: 480px) {
+      .grid-4 { grid-template-columns: 1fr !important; }
+    }
+  `;
+  document.head.appendChild(s);
+}
 
 function App() {
   const [user, setUser] = useState(null);
@@ -206,7 +228,7 @@ function App() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Segoe UI, sans-serif' }}>
-      <div style={{ width: '240px', backgroundColor: '#0f172a', color: 'white', padding: '24px 16px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <div className='sidebar-desktop' style={{ width: '240px', backgroundColor: '#0f172a', color: 'white', padding: '24px 16px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '8px 12px', marginBottom: '8px' }}>
           <div style={{ fontSize: '24px', marginBottom: '4px' }}>❄️</div>
           <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'white' }}>HVAC Field OS</h2>
@@ -276,7 +298,7 @@ function App() {
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            <div className='grid-4' style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
               {[
                 { label: 'Total Customers', value: dashData.customerCount, icon: '👥', color: '#2563eb', bg: '#eff6ff', page: 'customers' },
                 { label: 'Total Revenue', value: `$${dashData.totalRevenue.toFixed(0)}`, icon: '💰', color: '#16a34a', bg: '#f0fdf4', page: 'invoices' },
@@ -298,7 +320,7 @@ function App() {
               ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            <div className='grid-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
               {[
                 { label: 'Scheduled', value: dashData.scheduledCount, color: '#1d4ed8', bg: '#dbeafe' },
                 { label: 'In Progress', value: dashData.inProgressCount, color: '#92400e', bg: '#fef3c7' },
@@ -312,7 +334,7 @@ function App() {
               ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            <div className='grid-charts' style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '24px' }}>
               <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' }}>
                 <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: '700', color: '#1a2332' }}>Monthly Revenue</h2>
                 <ResponsiveContainer width="100%" height={200}>
@@ -351,7 +373,7 @@ function App() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            <div className='grid-2' style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
               <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1a2332' }}>Recent Work Orders</h2>
@@ -414,6 +436,7 @@ function App() {
           </div>
         )}
 
+        <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} userRole={user.role} />
         {currentPage === 'customers' && <Customers />}
         {currentPage === 'workorders' && <WorkOrders />}
         {currentPage === 'invoices' && <Invoices />}
