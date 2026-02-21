@@ -86,8 +86,16 @@ app.post('/api/auth/login', async (req, res) => {
     if (!validPassword) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+
+    // Get company info
+    let company = null;
+    if (user.companyId) {
+      const companyResult = await pool.query('SELECT * FROM "Companies" WHERE id = $1', [user.companyId]);
+      company = companyResult.rows[0] || null;
+    }
+
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.role, companyId: user.companyId },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -98,8 +106,10 @@ app.post('/api/auth/login', async (req, res) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role
-      }
+        role: user.role,
+        companyId: user.companyId,
+      },
+      company,
     });
   } catch (err) {
     console.error('Login error:', err.message);
@@ -107,40 +117,86 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.post('/api/auth/register', async (req, res) => {
-  const { firstName, lastName, email, password, role } = req.body;
-  if (!firstName || !lastName || !email || !password) {
+app.post('/api/auth/register-company', async (req, res) => {
+  const { companyName, companyEmail, companyPhone, firstName, lastName, email, password } = req.body;
+  if (!companyName || !firstName || !lastName || !email || !password) {
     return res.status(400).json({ message: 'All fields are required' });
   }
+  const client = await pool.connect();
   try {
-    const existing = await pool.query('SELECT id FROM "Users" WHERE email = $1', [email]);
+    await client.query('BEGIN');
+
+    // Check if email already exists
+    const existing = await client.query('SELECT id FROM "Users" WHERE email = $1', [email]);
     if (existing.rows.length > 0) {
+      await client.query('ROLLBACK');
       return res.status(400).json({ message: 'Email already in use' });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      `INSERT INTO "Users" ("firstName", "lastName", email, password, role, "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING *`,
-      [firstName, lastName, email, hashedPassword, role || 'technician']
+
+    // Create company
+    const companyResult = await client.query(
+      `INSERT INTO "Companies" (name, email, phone, plan, "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, 'trial', NOW(), NOW()) RETURNING *`,
+      [companyName, companyEmail || email, companyPhone || null]
     );
+    const company = companyResult.rows[0];
+
+    // Create admin user for company
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userResult = await client.query(
+      `INSERT INTO "Users" ("firstName", "lastName", email, password, role, "companyId", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, 'admin', $5, NOW(), NOW()) RETURNING *`,
+      [firstName, lastName, email, hashedPassword, company.id]
+    );
+    const user = userResult.rows[0];
+
+    await client.query('COMMIT');
+
     const token = jwt.sign(
-      { id: result.rows[0].id, email, role: result.rows[0].role },
+      { id: user.id, email: user.email, role: user.role, companyId: company.id },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
+
     res.json({
       token,
-      user: {
-        id: result.rows[0].id,
-        email,
-        firstName,
-        lastName,
-        role: result.rows[0].role
-      }
+      user: { id: user.id, email, firstName, lastName, role: 'admin', companyId: company.id },
+      company,
     });
   } catch (err) {
-    console.error('Register error:', err.message);
+    await client.query('ROLLBACK');
+    console.error('Register company error:', err.message);
     res.status(500).json({ message: 'Server error during registration' });
+  } finally {
+    client.release();
+  }
+});
+
+// ─── COMPANIES ───────────────────────────────────────────
+
+app.get('/api/company', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM "Companies" WHERE id = $1', [req.user.companyId]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Company not found' });
+    res.json({ company: result.rows[0] });
+  } catch (err) {
+    console.error('GET company error:', err.message);
+    res.status(500).json({ message: 'Failed to load company' });
+  }
+});
+
+app.put('/api/company', requireAuth, requireAdmin, async (req, res) => {
+  const { name, email, phone, address } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE "Companies" SET name=$1, email=$2, phone=$3, address=$4, "updatedAt"=NOW()
+       WHERE id=$5 RETURNING *`,
+      [name, email, phone, address, req.user.companyId]
+    );
+    res.json({ company: result.rows[0] });
+  } catch (err) {
+    console.error('PUT company error:', err.message);
+    res.status(500).json({ message: 'Failed to update company' });
   }
 });
 
@@ -149,7 +205,8 @@ app.post('/api/auth/register', async (req, res) => {
 app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, "firstName", "lastName", email, role, "createdAt" FROM "Users" ORDER BY "createdAt" DESC'
+      'SELECT id, "firstName", "lastName", email, role, "companyId", "createdAt" FROM "Users" WHERE "companyId" = $1 ORDER BY "createdAt" DESC',
+      [req.user.companyId]
     );
     res.json({ users: result.rows });
   } catch (err) {
@@ -170,9 +227,9 @@ app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      `INSERT INTO "Users" ("firstName", "lastName", email, password, role, "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING id, "firstName", "lastName", email, role, "createdAt"`,
-      [firstName, lastName, email, hashedPassword, role || 'technician']
+      `INSERT INTO "Users" ("firstName", "lastName", email, password, role, "companyId", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING id, "firstName", "lastName", email, role, "companyId", "createdAt"`,
+      [firstName, lastName, email, hashedPassword, role || 'technician', req.user.companyId]
     );
     res.json({ message: 'User created', user: result.rows[0] });
   } catch (err) {
@@ -188,12 +245,12 @@ app.put('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       query = `UPDATE "Users" SET "firstName"=$1, "lastName"=$2, email=$3, role=$4, password=$5, "updatedAt"=NOW()
-               WHERE id=$6 RETURNING id, "firstName", "lastName", email, role`;
-      params = [firstName, lastName, email, role, hashedPassword, req.params.id];
+               WHERE id=$6 AND "companyId"=$7 RETURNING id, "firstName", "lastName", email, role`;
+      params = [firstName, lastName, email, role, hashedPassword, req.params.id, req.user.companyId];
     } else {
       query = `UPDATE "Users" SET "firstName"=$1, "lastName"=$2, email=$3, role=$4, "updatedAt"=NOW()
-               WHERE id=$5 RETURNING id, "firstName", "lastName", email, role`;
-      params = [firstName, lastName, email, role, req.params.id];
+               WHERE id=$5 AND "companyId"=$6 RETURNING id, "firstName", "lastName", email, role`;
+      params = [firstName, lastName, email, role, req.params.id, req.user.companyId];
     }
     const result = await pool.query(query, params);
     if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
@@ -209,7 +266,10 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
     return res.status(400).json({ message: 'You cannot delete your own account' });
   }
   try {
-    const result = await pool.query('DELETE FROM "Users" WHERE id=$1 RETURNING *', [req.params.id]);
+    const result = await pool.query(
+      'DELETE FROM "Users" WHERE id=$1 AND "companyId"=$2 RETURNING *',
+      [req.params.id, req.user.companyId]
+    );
     if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
     res.json({ message: 'User deleted' });
   } catch (err) {
@@ -222,7 +282,10 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
 
 app.get('/api/customers', requireAuth, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM "Customers" ORDER BY "createdAt" DESC');
+    const result = await pool.query(
+      'SELECT * FROM "Customers" WHERE "companyId" = $1 ORDER BY "createdAt" DESC',
+      [req.user.companyId]
+    );
     res.json({ customers: result.rows });
   } catch (err) {
     console.error('GET customers error:', err.message);
@@ -234,9 +297,9 @@ app.post('/api/customers', requireAuth, async (req, res) => {
   const { firstName, lastName, phone, email, address } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO "Customers" ("firstName", "lastName", phone, email, address)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [firstName, lastName, phone, email, address]
+      `INSERT INTO "Customers" ("firstName", "lastName", phone, email, address, "companyId")
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [firstName, lastName, phone, email, address, req.user.companyId]
     );
     res.json({ message: 'Customer created', customer: result.rows[0] });
   } catch (err) {
@@ -250,8 +313,8 @@ app.put('/api/customers/:id', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
       `UPDATE "Customers" SET "firstName"=$1, "lastName"=$2, phone=$3, email=$4, address=$5, "updatedAt"=NOW()
-       WHERE id=$6 RETURNING *`,
-      [firstName, lastName, phone, email, address, req.params.id]
+       WHERE id=$6 AND "companyId"=$7 RETURNING *`,
+      [firstName, lastName, phone, email, address, req.params.id, req.user.companyId]
     );
     if (result.rows.length === 0) return res.status(404).json({ message: 'Customer not found' });
     res.json({ message: 'Customer updated', customer: result.rows[0] });
@@ -263,7 +326,10 @@ app.put('/api/customers/:id', requireAuth, async (req, res) => {
 
 app.delete('/api/customers/:id', requireAuth, async (req, res) => {
   try {
-    const result = await pool.query('DELETE FROM "Customers" WHERE id=$1 RETURNING *', [req.params.id]);
+    const result = await pool.query(
+      'DELETE FROM "Customers" WHERE id=$1 AND "companyId"=$2 RETURNING *',
+      [req.params.id, req.user.companyId]
+    );
     if (result.rows.length === 0) return res.status(404).json({ message: 'Customer not found' });
     res.json({ message: 'Customer deleted' });
   } catch (err) {
@@ -275,8 +341,8 @@ app.delete('/api/customers/:id', requireAuth, async (req, res) => {
 app.get('/api/customers/:id/jobs', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM "WorkOrders" WHERE "customerId"=$1 ORDER BY "createdAt" DESC',
-      [req.params.id]
+      'SELECT * FROM "WorkOrders" WHERE "customerId"=$1 AND "companyId"=$2 ORDER BY "createdAt" DESC',
+      [req.params.id, req.user.companyId]
     );
     res.json({ jobs: result.rows });
   } catch (err) {
@@ -289,12 +355,29 @@ app.get('/api/customers/:id/jobs', requireAuth, async (req, res) => {
 
 app.get('/api/work-orders', requireAuth, async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT wo.*, c."firstName", c."lastName"
-      FROM "WorkOrders" wo
-      LEFT JOIN "Customers" c ON wo."customerId" = c.id
-      ORDER BY wo."createdAt" DESC
-    `);
+    let query, params;
+    if (req.user.role === 'technician') {
+      // Technicians only see their own assigned jobs
+      query = `
+        SELECT wo.*, c."firstName", c."lastName"
+        FROM "WorkOrders" wo
+        LEFT JOIN "Customers" c ON wo."customerId" = c.id
+        WHERE wo."companyId" = $1 AND wo."assignedTo" = $2
+        ORDER BY wo."createdAt" DESC
+      `;
+      params = [req.user.companyId, req.user.id];
+    } else {
+      // Admins see all jobs for their company
+      query = `
+        SELECT wo.*, c."firstName", c."lastName"
+        FROM "WorkOrders" wo
+        LEFT JOIN "Customers" c ON wo."customerId" = c.id
+        WHERE wo."companyId" = $1
+        ORDER BY wo."createdAt" DESC
+      `;
+      params = [req.user.companyId];
+    }
+    const result = await pool.query(query, params);
     res.json({ workOrders: result.rows });
   } catch (err) {
     console.error('GET work-orders error:', err.message);
@@ -303,12 +386,12 @@ app.get('/api/work-orders', requireAuth, async (req, res) => {
 });
 
 app.post('/api/work-orders', requireAuth, async (req, res) => {
-  const { customerId, jobType, description, priority, scheduledDate, scheduledTime } = req.body;
+  const { customerId, jobType, description, priority, scheduledDate, scheduledTime, assignedTo } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO "WorkOrders" ("customerId", "jobType", description, priority, "scheduledDate", "scheduledTime", status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'scheduled') RETURNING *`,
-      [customerId, jobType, description, priority || 'normal', scheduledDate, scheduledTime]
+      `INSERT INTO "WorkOrders" ("customerId", "jobType", description, priority, "scheduledDate", "scheduledTime", status, "companyId", "assignedTo")
+       VALUES ($1, $2, $3, $4, $5, $6, 'scheduled', $7, $8) RETURNING *`,
+      [customerId, jobType, description, priority || 'normal', scheduledDate || null, scheduledTime || null, req.user.companyId, assignedTo || null]
     );
     res.json({ message: 'Work order created', workOrder: result.rows[0] });
   } catch (err) {
@@ -321,8 +404,8 @@ app.patch('/api/work-orders/:id/status', requireAuth, async (req, res) => {
   const { status } = req.body;
   try {
     const result = await pool.query(
-      'UPDATE "WorkOrders" SET status=$1, "updatedAt"=NOW() WHERE id=$2 RETURNING *',
-      [status, req.params.id]
+      'UPDATE "WorkOrders" SET status=$1, "updatedAt"=NOW() WHERE id=$2 AND "companyId"=$3 RETURNING *',
+      [status, req.params.id, req.user.companyId]
     );
     if (result.rows.length === 0) return res.status(404).json({ message: 'Work order not found' });
     res.json({ message: 'Status updated', workOrder: result.rows[0] });
@@ -333,13 +416,13 @@ app.patch('/api/work-orders/:id/status', requireAuth, async (req, res) => {
 });
 
 app.put('/api/work-orders/:id', requireAuth, async (req, res) => {
-  const { customerId, jobType, description, priority, scheduledDate, scheduledTime, status } = req.body;
+  const { customerId, jobType, description, priority, scheduledDate, scheduledTime, status, assignedTo } = req.body;
   try {
     const result = await pool.query(
       `UPDATE "WorkOrders" SET "customerId"=$1, "jobType"=$2, description=$3, priority=$4,
-       "scheduledDate"=$5, "scheduledTime"=$6, status=$7, "updatedAt"=NOW()
-       WHERE id=$8 RETURNING *`,
-      [customerId, jobType, description, priority, scheduledDate, scheduledTime, status, req.params.id]
+       "scheduledDate"=$5, "scheduledTime"=$6, status=$7, "assignedTo"=$8, "updatedAt"=NOW()
+       WHERE id=$9 AND "companyId"=$10 RETURNING *`,
+      [customerId, jobType, description, priority, scheduledDate || null, scheduledTime || null, status, assignedTo || null, req.params.id, req.user.companyId]
     );
     if (result.rows.length === 0) return res.status(404).json({ message: 'Work order not found' });
     res.json({ message: 'Work order updated', workOrder: result.rows[0] });
@@ -351,7 +434,10 @@ app.put('/api/work-orders/:id', requireAuth, async (req, res) => {
 
 app.delete('/api/work-orders/:id', requireAuth, async (req, res) => {
   try {
-    const result = await pool.query('DELETE FROM "WorkOrders" WHERE id=$1 RETURNING *', [req.params.id]);
+    const result = await pool.query(
+      'DELETE FROM "WorkOrders" WHERE id=$1 AND "companyId"=$2 RETURNING *',
+      [req.params.id, req.user.companyId]
+    );
     if (result.rows.length === 0) return res.status(404).json({ message: 'Work order not found' });
     res.json({ message: 'Work order deleted' });
   } catch (err) {
@@ -368,8 +454,9 @@ app.get('/api/invoices', requireAuth, async (req, res) => {
       SELECT inv.*, c."firstName", c."lastName"
       FROM "Invoices" inv
       LEFT JOIN "Customers" c ON inv."customerId" = c.id
+      WHERE inv."companyId" = $1
       ORDER BY inv."createdAt" DESC
-    `);
+    `, [req.user.companyId]);
     res.json({ invoices: result.rows });
   } catch (err) {
     console.error('GET invoices error:', err.message);
@@ -382,9 +469,9 @@ app.post('/api/invoices', requireAuth, async (req, res) => {
   const invoiceNumber = `INV-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
   try {
     const result = await pool.query(
-      `INSERT INTO "Invoices" ("invoiceNumber", "workOrderId", "customerId", "lineItems", subtotal, "taxRate", "taxAmount", total, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'unpaid') RETURNING *`,
-      [invoiceNumber, workOrderId, customerId, JSON.stringify(lineItems), subtotal, taxRate, taxAmount, total]
+      `INSERT INTO "Invoices" ("invoiceNumber", "workOrderId", "customerId", "lineItems", subtotal, "taxRate", "taxAmount", total, status, "companyId")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'unpaid', $9) RETURNING *`,
+      [invoiceNumber, workOrderId || null, customerId, JSON.stringify(lineItems), subtotal, taxRate, taxAmount, total, req.user.companyId]
     );
     res.json({ message: 'Invoice created', invoice: result.rows[0] });
   } catch (err) {
@@ -397,8 +484,8 @@ app.patch('/api/invoices/:id/status', requireAuth, async (req, res) => {
   const { status } = req.body;
   try {
     const result = await pool.query(
-      'UPDATE "Invoices" SET status=$1, "updatedAt"=NOW() WHERE id=$2 RETURNING *',
-      [status, req.params.id]
+      'UPDATE "Invoices" SET status=$1, "updatedAt"=NOW() WHERE id=$2 AND "companyId"=$3 RETURNING *',
+      [status, req.params.id, req.user.companyId]
     );
     if (result.rows.length === 0) return res.status(404).json({ message: 'Invoice not found' });
     res.json({ message: 'Invoice status updated', invoice: result.rows[0] });
@@ -410,7 +497,10 @@ app.patch('/api/invoices/:id/status', requireAuth, async (req, res) => {
 
 app.delete('/api/invoices/:id', requireAuth, async (req, res) => {
   try {
-    const result = await pool.query('DELETE FROM "Invoices" WHERE id=$1 RETURNING *', [req.params.id]);
+    const result = await pool.query(
+      'DELETE FROM "Invoices" WHERE id=$1 AND "companyId"=$2 RETURNING *',
+      [req.params.id, req.user.companyId]
+    );
     if (result.rows.length === 0) return res.status(404).json({ message: 'Invoice not found' });
     res.json({ message: 'Invoice deleted' });
   } catch (err) {
@@ -423,6 +513,6 @@ app.listen(PORT, () => {
   console.log('========================================');
   console.log(`Server running on port ${PORT}`);
   console.log('Database: PostgreSQL (hvac_field_os)');
-  console.log('Auth: JWT enabled');
+  console.log('Auth: JWT + Multi-tenant enabled');
   console.log('========================================');
 });

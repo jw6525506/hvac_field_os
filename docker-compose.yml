@@ -1,17 +1,13 @@
-# Docker Compose for HVAC Field OS
-version: '3.8'
-
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:14-alpine
     container_name: hvac_postgres
     environment:
       POSTGRES_DB: hvac_field_os
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: hvac_dev_password
+      POSTGRES_PASSWORD: password123
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database-schema.sql:/docker-entrypoint-initdb.d/001-schema.sql
@@ -21,21 +17,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: hvac_redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Backend API (Node.js)
   backend:
     build:
       context: ./backend
@@ -45,58 +26,26 @@ services:
       DB_HOST: postgres
       DB_NAME: hvac_field_os
       DB_USER: postgres
-      DB_PASSWORD: hvac_dev_password
+      DB_PASSWORD: password123
       DB_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: dev_jwt_secret_change_in_production
+      JWT_SECRET: hvac_super_secret_key_2026
       PORT: 3000
-      NODE_ENV: development
+      NODE_ENV: production
     ports:
       - "3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: npm run dev
 
-  # Frontend Web App (React)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: hvac_frontend
-    environment:
-      # Use backend service name instead of localhost
-      REACT_APP_API_URL: http://backend:3000/api
     ports:
       - "3001:3000"
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm start
-
-  # PgAdmin (Database Management UI)
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: hvac_pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@hvacfieldos.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
 
 volumes:
   postgres_data:
-  redis_data:
-  pgadmin_data:
