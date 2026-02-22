@@ -725,6 +725,77 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
   }
 });
 
+
+// ─── INVENTORY ───────────────────────────────────────────
+
+app.get('/api/inventory', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT inv.*, u."firstName", u."lastName" FROM "Inventory" inv
+       LEFT JOIN "Users" u ON inv."assignedTo" = u.id
+       WHERE inv."companyId" = $1 ORDER BY inv.category, inv.name`,
+      [req.user.companyId]
+    );
+    res.json({ inventory: result.rows });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load inventory' });
+  }
+});
+
+app.post('/api/inventory', requireAuth, requireAdmin, async (req, res) => {
+  const { name, description, sku, quantity, minQuantity, unitCost, unitPrice, category, assignedTo } = req.body;
+  if (!name) return res.status(400).json({ message: 'Name is required' });
+  try {
+    const result = await pool.query(
+      `INSERT INTO "Inventory" (name, description, sku, quantity, "minQuantity", "unitCost", "unitPrice", category, "assignedTo", "companyId")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [name, description||null, sku||null, quantity||0, minQuantity||0, unitCost||0, unitPrice||0, category||null, assignedTo||null, req.user.companyId]
+    );
+    res.json({ message: 'Item created', item: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to create item' });
+  }
+});
+
+app.put('/api/inventory/:id', requireAuth, requireAdmin, async (req, res) => {
+  const { name, description, sku, quantity, minQuantity, unitCost, unitPrice, category, assignedTo } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE "Inventory" SET name=$1, description=$2, sku=$3, quantity=$4, "minQuantity"=$5, "unitCost"=$6, "unitPrice"=$7, category=$8, "assignedTo"=$9, "updatedAt"=NOW()
+       WHERE id=$10 AND "companyId"=$11 RETURNING *`,
+      [name, description||null, sku||null, quantity||0, minQuantity||0, unitCost||0, unitPrice||0, category||null, assignedTo||null, req.params.id, req.user.companyId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Item not found' });
+    res.json({ message: 'Item updated', item: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update item' });
+  }
+});
+
+app.delete('/api/inventory/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM "Inventory" WHERE id=$1 AND "companyId"=$2 RETURNING *', [req.params.id, req.user.companyId]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Item not found' });
+    res.json({ message: 'Item deleted' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete item' });
+  }
+});
+
+app.patch('/api/inventory/:id/adjust', requireAuth, async (req, res) => {
+  const { adjustment, reason } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE "Inventory" SET quantity = quantity + $1, "updatedAt"=NOW() WHERE id=$2 AND "companyId"=$3 RETURNING *`,
+      [adjustment, req.params.id, req.user.companyId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Item not found' });
+    res.json({ message: 'Quantity adjusted', item: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to adjust quantity' });
+  }
+});
+
 // ─── CSV IMPORT ──────────────────────────────────────────
 
 app.post('/api/customers/import', requireAuth, async (req, res) => {

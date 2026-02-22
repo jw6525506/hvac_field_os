@@ -8,6 +8,7 @@ import Signup from './components/Signup';
 import Users from './components/Users';
 import MapView from './components/MapView';
 import LandingPage from './components/LandingPage';
+import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 
 const API_BASE = 'http://localhost:3000/api';
@@ -364,6 +365,7 @@ function App() {
     { page: 'invoices', icon: '💰', label: 'Invoices' },
     { page: 'billing', icon: '💳', label: 'Billing' },
     { page: 'map', icon: '🗺️', label: 'Job Map' },
+    { page: 'inventory', icon: '📦', label: 'Inventory' },
     { page: 'users', icon: '👤', label: 'Team' },
   ];
 
@@ -594,6 +596,7 @@ function App() {
         {currentPage === 'invoices' && user.role !== 'technician' && <Invoices />}
         {currentPage === 'billing' && user.role !== 'technician' && <Billing currentUser={user} />}
         {currentPage === 'map' && <MapView />}
+        {currentPage === 'inventory' && <Inventory />}
         {currentPage === 'users' && user.role === 'admin' && <Users />}
       </div>
     </div>
