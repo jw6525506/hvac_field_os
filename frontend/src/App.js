@@ -237,7 +237,7 @@ function App() {
       <div style={{ width: '100%', maxWidth: '420px', padding: '0 20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
-          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>HVAC Field OS</h1>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Unified Solutions</h1>
           <p style={{ color: '#94a3b8', margin: 0 }}>Set your new password</p>
         </div>
         <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '36px', border: '1px solid #334155' }}>
@@ -268,7 +268,7 @@ function App() {
       <div style={{ width: '100%', maxWidth: '420px', padding: '0 20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
-          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>HVAC Field OS</h1>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Unified Solutions</h1>
           <p style={{ color: '#94a3b8', margin: 0 }}>Reset your password</p>
         </div>
         <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '36px', border: '1px solid #334155' }}>
@@ -308,7 +308,7 @@ function App() {
       <div style={{ width: '100%', maxWidth: '420px', padding: '0 20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
-          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>HVAC Field OS</h1>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Unified Solutions</h1>
           <p style={{ color: '#94a3b8', margin: 0, fontSize: '15px' }}>Sign in to your account</p>
         </div>
         <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '36px', border: '1px solid #334155' }}>
@@ -370,7 +370,7 @@ function App() {
       <div className='sidebar-desktop' style={{ width: '240px', backgroundColor: '#0f172a', color: 'white', padding: '24px 16px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '8px 12px', marginBottom: '8px' }}>
           <div style={{ fontSize: '24px', marginBottom: '4px' }}>❄️</div>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'white' }}>HVAC Field OS</h2>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'white' }}>Unified Solutions</h2>
           {company && <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b' }}>{company.name}</p>}
         </div>
         {billingStatus && billingStatus.plan === 'trial' && (

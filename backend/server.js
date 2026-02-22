@@ -58,7 +58,7 @@ const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'hvac_field_os',
+  database: process.env.DB_NAME || 'Unified Solutions',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'password123',
   port: 5432,
@@ -230,11 +230,11 @@ app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
     await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: email,
-      subject: 'Reset your HVAC Field OS password',
+      subject: 'Reset your Unified Solutions password',
       html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f0f4f8;font-family:Segoe UI,sans-serif;">
         <div style="max-width:500px;margin:40px auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
           <div style="background:#0f172a;padding:32px;text-align:center;">
-            <h1 style="margin:0;color:white;font-size:24px;font-weight:700;">❄️ HVAC Field OS</h1>
+            <h1 style="margin:0;color:white;font-size:24px;font-weight:700;">❄️ Unified Solutions</h1>
           </div>
           <div style="padding:32px;">
             <h2 style="margin:0 0 16px;color:#1a2332;font-size:20px;">Reset Your Password</h2>
@@ -705,7 +705,7 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
     </div>
   </div>
   <div style="background:#f8fafc;padding:20px 32px;text-align:center;border-top:1px solid #e2e8f0;">
-    <p style="margin:0;color:#94a3b8;font-size:12px;">Powered by HVAC Field OS</p>
+    <p style="margin:0;color:#94a3b8;font-size:12px;">Powered by Unified Solutions</p>
   </div>
 </div>
 </body></html>`;
@@ -767,7 +767,7 @@ app.delete('/api/work-orders/:id/photos/:filename', requireAuth, async (req, res
 app.listen(PORT, () => {
   console.log('========================================');
   console.log(`Server running on port ${PORT}`);
-  console.log('Database: PostgreSQL (hvac_field_os)');
+  console.log('Database: PostgreSQL (Unified Solutions)');
   console.log('Auth: JWT + Multi-tenant enabled');
   console.log('Billing: Stripe enabled');
   console.log('Email: Resend enabled');

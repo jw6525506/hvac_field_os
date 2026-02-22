@@ -78,7 +78,7 @@ function Signup({ onSignupSuccess }) {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
-          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>HVAC Field OS</h1>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Unified Solutions</h1>
           <p style={{ color: '#94a3b8', margin: 0, fontSize: '15px' }}>Start your 14-day free trial</p>
         </div>
 
