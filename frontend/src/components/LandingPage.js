@@ -101,7 +101,7 @@ function LandingPage({ onLogin, onSignup }) {
       <section className="hero">
         <div>
           <div className="hero-badge">Built for trades businesses</div>
-          <h1 className="hero-title">Run your entire<br />HVAC business<br /><span className="accent">from one place.</span></h1>
+          <h1 className="hero-title">Run your entire<br />trades business<br /><span className="accent">from one place.</span></h1>
           <p className="hero-sub">Customers, work orders, invoices, and your whole team managed from your phone or desktop. No paperwork. No chaos.</p>
           <div className="hero-cta">
             <button className="btn-hero btn-hero-primary" onClick={onSignup}>Start 14-Day Free Trial</button>
