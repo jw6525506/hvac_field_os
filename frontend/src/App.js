@@ -7,6 +7,7 @@ import Billing from './components/Billing';
 import Signup from './components/Signup';
 import Users from './components/Users';
 import MapView from './components/MapView';
+import LandingPage from './components/LandingPage';
 import BottomNav from './components/BottomNav';
 
 const API_BASE = 'http://localhost:3000/api';
@@ -34,6 +35,7 @@ if (!document.getElementById('mobile-styles')) {
 
 function App() {
   const [user, setUser] = useState(null);
+  const [showLanding, setShowLanding] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -210,7 +212,7 @@ function App() {
 
   const handleLogout = () => {
     setUser(null); setCompany(null); setBillingStatus(null);
-    setCurrentPage(data.user.role === 'technician' ? 'workorders' : 'dashboard');
+    setCurrentPage('dashboard');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('company');
@@ -302,6 +304,13 @@ function App() {
       </div>
     </div>
   );
+
+  if (showLanding && !user) {
+    return <LandingPage
+      onLogin={() => setShowLanding(false)}
+      onSignup={() => { setShowLanding(false); setShowSignup(true); }}
+    />;
+  }
 
   if (!user) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0a0f2c', fontFamily: 'Segoe UI, sans-serif' }}>
