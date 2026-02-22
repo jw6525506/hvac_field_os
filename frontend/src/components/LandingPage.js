@@ -100,7 +100,7 @@ function LandingPage({ onLogin, onSignup }) {
 
       <section className="hero">
         <div>
-          <div className="hero-badge">Built for HVAC professionals</div>
+          <div className="hero-badge">Built for trades businesses</div>
           <h1 className="hero-title">Run your entire<br />HVAC business<br /><span className="accent">from one place.</span></h1>
           <p className="hero-sub">Customers, work orders, invoices, and your whole team managed from your phone or desktop. No paperwork. No chaos.</p>
           <div className="hero-cta">
@@ -186,13 +186,13 @@ function LandingPage({ onLogin, onSignup }) {
 
       <div className="cta-section">
         <h2 className="cta-title">Ready to clean up<br />the chaos?</h2>
-        <p className="cta-sub">Join HVAC companies already running smarter with Helix8.</p>
+        <p className="cta-sub">Join trades businesses already running smarter with Helix8.</p>
         <button className="btn-hero btn-hero-primary" onClick={onSignup}>Start Your Free Trial Today</button>
       </div>
 
       <footer className="footer">
         <div className="footer-logo">Helix<span>8</span></div>
-        <div className="footer-copy">© 2026 Helix8. Built for HVAC professionals.</div>
+        <div className="footer-copy">© 2026 Helix8. Built for trades businesses.</div>
       </footer>
     </div>
   );
