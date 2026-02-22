@@ -528,7 +528,7 @@ function App() {
                         <p style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: '600', color: '#0d1b3e' }}>{wo.jobType} — {wo.firstName} {wo.lastName}</p>
                         <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>{wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString() : 'No date'}</p>
                       </div>
-                      <span style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: s.color, backgroundColor: s.bg }}>{wo.status.replace('_', ' ')}</span>
+                      <span style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: s.color, backgroundColor: s.bg }}>{(wo.status || 'scheduled').replace('_', ' ')}</span>
                     </div>
                   );
                 })}

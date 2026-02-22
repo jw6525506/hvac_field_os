@@ -251,7 +251,7 @@ export default function WorkOrders() {
         </div>
       ) : (
         filtered.map(wo => {
-          const statusCfg = STATUS_CONFIG[wo.status] || STATUS_CONFIG.scheduled;
+          const statusCfg = STATUS_CONFIG[wo.status || 'scheduled'] || STATUS_CONFIG.scheduled;
           const priorityCfg = PRIORITY_CONFIG[wo.priority] || PRIORITY_CONFIG.normal;
           return (
             <div key={wo.id} style={S.card}
