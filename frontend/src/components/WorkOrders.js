@@ -61,7 +61,7 @@ const PRIORITY_CONFIG = {
   urgent: { label: 'Urgent', color: '#991b1b', bg: '#fee2e2' },
 };
 
-const EMPTY_FORM = { customerId: '', jobType: 'repair', description: '', priority: 'normal', scheduledDate: '', scheduledTime: '' };
+const EMPTY_FORM = { customerId: '', jobType: 'repair', description: '', priority: 'normal', scheduledDate: '', scheduledTime: '', assignedTo: '' };
 
 function Toast({ message, type, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
@@ -70,6 +70,7 @@ function Toast({ message, type, onClose }) {
 
 export default function WorkOrders() {
   const [workOrders, setWorkOrders] = useState([]);
+  const [users, setUsers] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [filter, setFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
@@ -101,14 +102,29 @@ export default function WorkOrders() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  const loadUsers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3000/api/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.users || []);
+      }
+    } catch (err) {
+      console.error('Failed to load users');
+    }
+  };
+
+  useEffect(() => { load(); loadUsers(); }, [load]);
 
   const openCreate = () => { setEditTarget(null); setFormData(EMPTY_FORM); setShowForm(true); };
   const openEdit = (wo) => {
     setEditTarget(wo);
     setFormData({
       customerId: wo.customerId, jobType: wo.jobType, description: wo.description,
-      priority: wo.priority, scheduledDate: wo.scheduledDate?.slice(0, 10) || '', scheduledTime: wo.scheduledTime || '',
+      priority: wo.priority, scheduledDate: wo.scheduledDate?.slice(0, 10) || '', scheduledTime: wo.scheduledTime || '', assignedTo: wo.assignedTo || '',
     });
     setShowForm(true);
   };
@@ -321,6 +337,17 @@ export default function WorkOrders() {
                   <label style={S.label}>Scheduled Time</label>
                   <input type="time" value={formData.scheduledTime} onChange={e => setFormData(f => ({ ...f, scheduledTime: e.target.value }))} style={S.input} />
                 </div>
+              </div>
+
+              <div style={S.formGroup}>
+                <label style={S.label}>Assign To</label>
+                <select value={formData.assignedTo} onChange={e => setFormData(f => ({ ...f, assignedTo: e.target.value }))}
+                  style={S.input}>
+                  <option value=''>Unassigned</option>
+                  {users.map(u => (
+                    <option key={u.id} value={u.id}>{u.firstName} {u.lastName} ({u.role})</option>
+                  ))}
+                </select>
               </div>
 
               <div style={S.modalFooter}>
