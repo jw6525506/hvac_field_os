@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useCallback } from 'react';
 
 const API_BASE = 'http://localhost:3000/api';
@@ -69,6 +70,7 @@ function Toast({ message, type, onClose }) {
 }
 
 export default function WorkOrders() {
+  const { t } = useTranslation();
   const [workOrders, setWorkOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -267,7 +269,7 @@ export default function WorkOrders() {
                   <button style={S.editBtn} onClick={() => openEdit(wo)}>Edit</button>
                   <button onClick={() => setPhotoTarget(wo)}
                     style={{ padding: '7px 14px', backgroundColor: '#f0fdf4', color: '#15803d', border: '1px solid #86efac', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
-                    📷 {wo.photos && wo.photos.length > 0 ? `Photos (${wo.photos.length})` : 'Photos'}
+                    📷 {wo.photos && wo.photos.length > 0 ? `Photos (${wo.photos.length})` : t('photos')}
                   </button>
                   <button style={S.deleteBtn} onClick={() => setDeleteTarget(wo)}>Delete</button>
                 </div>

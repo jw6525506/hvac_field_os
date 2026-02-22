@@ -1,3 +1,6 @@
+import './i18n';
+import { useTranslation } from 'react-i18next';
+import i18n from './i18n/index';
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Customers from './components/Customers';
@@ -35,7 +38,9 @@ if (!document.getElementById('mobile-styles')) {
 }
 
 function App() {
+  const { t } = useTranslation();
   const [user, setUser] = useState(null);
+  const [language, setLanguage] = useState(localStorage.getItem('language') || 'en');
   const [showLanding, setShowLanding] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [email, setEmail] = useState('');
@@ -211,6 +216,12 @@ function App() {
     }
   };
 
+  const handleLanguageChange = (lang) => {
+    setLanguage(lang);
+    localStorage.setItem('language', lang);
+    i18n.changeLanguage(lang);
+  };
+
   const handleLogout = () => {
     setUser(null); setCompany(null); setBillingStatus(null);
     setCurrentPage('dashboard');
@@ -359,13 +370,13 @@ function App() {
 
   const isTech = user && user.role === 'technician';
   const navItems = [
-    { page: 'dashboard', icon: '🏠', label: 'Dashboard' },
-    { page: 'customers', icon: '👥', label: 'Customers' },
-    { page: 'workorders', icon: '📋', label: 'Work Orders' },
-    { page: 'invoices', icon: '💰', label: 'Invoices' },
-    { page: 'billing', icon: '💳', label: 'Billing' },
-    { page: 'map', icon: '🗺️', label: 'Job Map' },
-    { page: 'inventory', icon: '📦', label: 'Inventory' },
+    { page: 'dashboard', icon: '🏠', label: t('dashboard') },
+    { page: 'customers', icon: '👥', label: t('customers') },
+    { page: 'workorders', icon: '📋', label: t('workOrders') },
+    { page: 'invoices', icon: '💰', label: t('invoices') },
+    { page: 'billing', icon: '💳', label: t('billing') },
+    { page: 'map', icon: '🗺️', label: t('jobMap') },
+    { page: 'inventory', icon: '📦', label: t('inventory') },
     { page: 'users', icon: '👤', label: 'Team' },
   ];
 
@@ -417,6 +428,13 @@ function App() {
               <p style={{ margin: 0, fontSize: '11px', color: '#64748b', textTransform: 'capitalize' }}>{user.role}</p>
             </div>
           </div>
+          <select value={language} onChange={e => handleLanguageChange(e.target.value)}
+            style={{ width: '100%', padding: '8px 10px', marginBottom: '8px', backgroundColor: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
+            <option value="en">🇺🇸 English</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="fr">🇫🇷 Français</option>
+            <option value="pt">🇧🇷 Português</option>
+          </select>
           <button onClick={handleLogout}
             style={{ width: '100%', padding: '9px', backgroundColor: '#1e293b', color: '#94a3b8', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
             Sign Out

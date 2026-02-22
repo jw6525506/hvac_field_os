@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 
 const API_BASE = 'http://localhost:3000/api';
@@ -16,6 +17,7 @@ const EMPTY_FORM = { name: '', description: '', sku: '', quantity: 0, minQuantit
 const CATEGORIES = ['Parts', 'Tools', 'Equipment', 'Electrical', 'Plumbing', 'Hardware', 'Safety', 'Chemicals', 'Consumables', 'Other'];
 
 function Inventory() {
+  const { t } = useTranslation();
   const [inventory, setInventory] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);

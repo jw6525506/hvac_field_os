@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useCallback } from 'react';
 
 const API_BASE = 'http://localhost:3000/api';
@@ -66,6 +67,7 @@ function Toast({ message, type, onClose }) {
 }
 
 export default function Invoices() {
+  const { t } = useTranslation();
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [workOrders, setWorkOrders] = useState([]);
@@ -352,7 +354,7 @@ export default function Invoices() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 70px 100px 36px', gap: '6px', marginBottom: '6px' }}>
-                {['Description', 'Qty', 'Price ($)', ''].map((h, i) => <span key={i} style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase' }}>{h}</span>)}
+                {[t('description'), 'Qty', 'Price ($)', ''].map((h, i) => <span key={i} style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase' }}>{h}</span>)}
               </div>
 
               {lineItems.map((item, idx) => (
