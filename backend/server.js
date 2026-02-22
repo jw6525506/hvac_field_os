@@ -725,6 +725,38 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
   }
 });
 
+// ─── CSV IMPORT ──────────────────────────────────────────
+
+app.post('/api/customers/import', requireAuth, async (req, res) => {
+  const { customers } = req.body;
+  if (!customers || !Array.isArray(customers)) {
+    return res.status(400).json({ message: 'Invalid data' });
+  }
+  let imported = 0;
+  let skipped = 0;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const c of customers) {
+      if (!c.firstName && !c.lastName) { skipped++; continue; }
+      await client.query(
+        `INSERT INTO "Customers" ("firstName", "lastName", phone, email, address, "companyId", "createdAt", "updatedAt")
+         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
+        [c.firstName || '', c.lastName || '', c.phone || null, c.email || null, c.address || null, req.user.companyId]
+      );
+      imported++;
+    }
+    await client.query('COMMIT');
+    res.json({ message: `Successfully imported ${imported} customers`, imported, skipped });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('CSV import error:', err.message);
+    res.status(500).json({ message: 'Import failed: ' + err.message });
+  } finally {
+    client.release();
+  }
+});
+
 // ─── PHOTO UPLOADS ───────────────────────────────────────
 
 app.post('/api/work-orders/:id/photos', requireAuth, upload.array('photos', 10), async (req, res) => {

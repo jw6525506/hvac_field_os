@@ -5,6 +5,8 @@ function Customers() {
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -80,13 +82,58 @@ function Customers() {
     }
   };
 
+  const handleImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImporting(true);
+    setImportMsg('');
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(l => l.trim());
+      const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
+      const customers = [];
+      for (let i = 1; i < lines.length; i++) {
+        const vals = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+        const row = {};
+        headers.forEach((h, idx) => { row[h] = vals[idx] || ''; });
+        customers.push({
+          firstName: row['firstname'] || row['first name'] || row['first_name'] || '',
+          lastName: row['lastname'] || row['last name'] || row['last_name'] || '',
+          phone: row['phone'] || row['telephone'] || '',
+          email: row['email'] || '',
+          address: row['address'] || '',
+        });
+      }
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3000/api/customers/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ customers }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setImportMsg(data.message || 'Import failed'); return; }
+      setImportMsg('✅ ' + data.message);
+      loadCustomers();
+    } catch (err) {
+      setImportMsg('Failed to read file.');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
         <h1>Customers</h1>
-        <button onClick={() => setShowForm(true)} style={{ padding: '12px 24px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-          + Add Customer
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <label style={{ padding: '12px 18px', backgroundColor: 'white', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>
+            {importing ? 'Importing...' : '📥 Import CSV'}
+            <input type="file" accept=".csv" style={{ display: 'none' }} onChange={handleImport} />
+          </label>
+          <button onClick={() => setShowForm(true)} style={{ padding: '12px 24px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+            + Add Customer
+          </button>
+        </div>
       </div>
 
       <div style={{ marginBottom: '20px' }}>
