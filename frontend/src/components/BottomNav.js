@@ -1,13 +1,15 @@
 import React from 'react';
 
-function BottomNav({ currentPage, setCurrentPage }) {
-  const navItems = [
+function BottomNav({ currentPage, setCurrentPage, userRole }) {
+  const techItems = ['workorders', 'map'];
+  const allItems = [
     { page: 'dashboard', icon: '🏠', label: 'Home' },
     { page: 'customers', icon: '👥', label: 'Customers' },
     { page: 'workorders', icon: '📋', label: 'Jobs' },
     { page: 'invoices', icon: '💰', label: 'Invoices' },
     { page: 'billing', icon: '💳', label: 'Billing' },
   ];
+  const navItems = userRole === 'technician' ? allItems.filter(i => techItems.includes(i.page)) : allItems;
 
   return (
     <div className="bottom-nav" style={{

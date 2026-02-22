@@ -210,7 +210,7 @@ function App() {
 
   const handleLogout = () => {
     setUser(null); setCompany(null); setBillingStatus(null);
-    setCurrentPage('dashboard');
+    setCurrentPage(data.user.role === 'technician' ? 'workorders' : 'dashboard');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('company');
@@ -347,6 +347,7 @@ function App() {
     </div>
   );
 
+  const isTech = user && user.role === 'technician';
   const navItems = [
     { page: 'dashboard', icon: '🏠', label: 'Dashboard' },
     { page: 'customers', icon: '👥', label: 'Customers' },
@@ -385,7 +386,10 @@ function App() {
           </div>
         )}
         <nav style={{ flex: 1 }}>
-          {navItems.filter(item => item.page !== 'users' || user.role === 'admin').map(({ page, icon, label }) => (
+          {navItems.filter(item => {
+              if (user.role === 'technician') return ['workorders', 'map'].includes(item.page);
+              return item.page !== 'users' || user.role === 'admin';
+            }).map(({ page, icon, label }) => (
             <button key={page} onClick={() => setCurrentPage(page)}
               style={{ width: '100%', padding: '11px 14px', marginBottom: '4px', backgroundColor: currentPage === page ? '#1e40af' : 'transparent', color: currentPage === page ? 'white' : '#94a3b8', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span>{icon}</span> {label}
@@ -424,7 +428,7 @@ function App() {
           </div>
         )}
 
-        {currentPage === 'dashboard' && (
+        {currentPage === 'dashboard' && user.role !== 'technician' && (
           <div style={{ padding: '32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
               <div>
@@ -578,8 +582,8 @@ function App() {
         <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} userRole={user.role} />
         {currentPage === 'customers' && <Customers />}
         {currentPage === 'workorders' && <WorkOrders />}
-        {currentPage === 'invoices' && <Invoices />}
-        {currentPage === 'billing' && <Billing currentUser={user} />}
+        {currentPage === 'invoices' && user.role !== 'technician' && <Invoices />}
+        {currentPage === 'billing' && user.role !== 'technician' && <Billing currentUser={user} />}
         {currentPage === 'map' && <MapView />}
         {currentPage === 'users' && user.role === 'admin' && <Users />}
       </div>
