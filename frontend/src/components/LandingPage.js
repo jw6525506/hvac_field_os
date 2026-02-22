@@ -192,7 +192,7 @@ function LandingPage({ onLogin, onSignup }) {
 
       <footer className="footer">
         <div className="footer-logo">Helix<span>8</span></div>
-        <div className="footer-copy">© 2026 Helix8. Built for trades businesses.</div>
+        <div className="footer-copy">© 2026 Helix8 by Octave Labs. Built for trades professionals.</div>
       </footer>
     </div>
   );
