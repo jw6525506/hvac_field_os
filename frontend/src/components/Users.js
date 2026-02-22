@@ -81,16 +81,16 @@ function Users() {
   };
 
   const ROLE_COLORS = {
-    admin: { color: '#1d4ed8', bg: '#dbeafe' },
+    admin: { color: '#0891b2', bg: '#dbeafe' },
     technician: { color: '#15803d', bg: '#dcfce7' },
   };
 
-  const avatarColors = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
+  const avatarColors = ['#06b6d4', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
 
   const inputStyle = {
     width: '100%', padding: '10px 12px', fontSize: '14px',
     border: '1px solid #e2e8f0', borderRadius: '8px',
-    boxSizing: 'border-box', outline: 'none', color: '#1a2332',
+    boxSizing: 'border-box', outline: 'none', color: '#0d1b3e',
     backgroundColor: 'white',
   };
 
@@ -104,12 +104,12 @@ function Users() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: '28px', fontWeight: '700', color: '#1a2332' }}>Team</h1>
+          <h1 style={{ margin: '0 0 4px', fontSize: '28px', fontWeight: '700', color: '#0d1b3e' }}>Team</h1>
           <p style={{ margin: 0, color: '#64748b', fontSize: '15px' }}>Manage your technicians and admins</p>
         </div>
         {!showForm && (
           <button onClick={() => { setShowForm(true); setEditingUser(null); setForm({ firstName: '', lastName: '', email: '', password: '', role: 'technician' }); }}
-            style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' }}>
+            style={{ padding: '10px 20px', backgroundColor: '#06b6d4', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' }}>
             + Add Team Member
           </button>
         )}
@@ -122,7 +122,7 @@ function Users() {
       {/* Add/Edit Form */}
       {showForm && (
         <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: '700', color: '#1a2332' }}>
+          <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: '700', color: '#0d1b3e' }}>
             {editingUser ? 'Edit Team Member' : 'Add Team Member'}
           </h2>
           <form onSubmit={handleSubmit}>
@@ -161,7 +161,7 @@ function Users() {
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button type="submit"
-                style={{ padding: '10px 24px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' }}>
+                style={{ padding: '10px 24px', backgroundColor: '#06b6d4', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' }}>
                 {editingUser ? 'Save Changes' : 'Add Team Member'}
               </button>
               <button type="button" onClick={handleCancel}
@@ -179,7 +179,7 @@ function Users() {
       ) : users.length === 0 ? (
         <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '48px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>👥</div>
-          <h2 style={{ margin: '0 0 8px', color: '#1a2332' }}>No team members yet</h2>
+          <h2 style={{ margin: '0 0 8px', color: '#0d1b3e' }}>No team members yet</h2>
           <p style={{ color: '#64748b', margin: 0 }}>Add your first technician to get started.</p>
         </div>
       ) : (
@@ -204,7 +204,7 @@ function Users() {
                         <div style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: avatarColors[idx % avatarColors.length], color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', flexShrink: 0 }}>
                           {u.firstName?.[0]}{u.lastName?.[0]}
                         </div>
-                        <span style={{ fontWeight: '600', color: '#1a2332', fontSize: '14px' }}>{u.firstName} {u.lastName}</span>
+                        <span style={{ fontWeight: '600', color: '#0d1b3e', fontSize: '14px' }}>{u.firstName} {u.lastName}</span>
                       </div>
                     </td>
                     <td style={{ padding: '14px 16px', fontSize: '14px', color: '#475569' }}>{u.email}</td>

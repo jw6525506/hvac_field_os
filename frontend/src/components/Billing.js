@@ -80,7 +80,7 @@ function Billing({ currentUser }) {
   return (
     <div style={{ padding: '32px', fontFamily: 'Segoe UI, sans-serif' }}>
       <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ margin: '0 0 4px', fontSize: '28px', fontWeight: '700', color: '#1a2332' }}>Billing and Plans</h1>
+        <h1 style={{ margin: '0 0 4px', fontSize: '28px', fontWeight: '700', color: '#0d1b3e' }}>Billing and Plans</h1>
         <p style={{ margin: 0, color: '#64748b', fontSize: '15px' }}>Manage your subscription</p>
       </div>
 
@@ -92,7 +92,7 @@ function Billing({ currentUser }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <div>
-            <p style={{ margin: '0 0 4px', fontWeight: '700', fontSize: '16px', color: '#1a2332' }}>
+            <p style={{ margin: '0 0 4px', fontWeight: '700', fontSize: '16px', color: '#0d1b3e' }}>
               {isOnPaidPlan ? `✅ ${planLabel} Plan — Active` :
                billingStatus.trialExpired ? '🔒 Trial Expired' :
                `⏳ Trial — ${billingStatus.trialDaysLeft} days left`}
@@ -105,7 +105,7 @@ function Billing({ currentUser }) {
           </div>
           {isOnPaidPlan && (
             <button onClick={handlePortal}
-              style={{ padding: '10px 20px', backgroundColor: '#1a2332', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', whiteSpace: 'nowrap' }}>
+              style={{ padding: '10px 20px', backgroundColor: '#0d1b3e', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', whiteSpace: 'nowrap' }}>
               Manage Subscription
             </button>
           )}
@@ -124,16 +124,16 @@ function Billing({ currentUser }) {
             {plan.popular && (
               <div style={{
                 position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
-                backgroundColor: '#2563eb', color: 'white', padding: '4px 16px',
+                backgroundColor: '#06b6d4', color: 'white', padding: '4px 16px',
                 borderRadius: '20px', fontSize: '12px', fontWeight: '700',
               }}>
                 MOST POPULAR
               </div>
             )}
-            <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: '700', color: '#1a2332' }}>{plan.name}</h2>
+            <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: '700', color: '#0d1b3e' }}>{plan.name}</h2>
             <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b' }}>{plan.description}</p>
             <div style={{ marginBottom: '24px' }}>
-              <span style={{ fontSize: '42px', fontWeight: '800', color: '#1a2332' }}>${plan.price}</span>
+              <span style={{ fontSize: '42px', fontWeight: '800', color: '#0d1b3e' }}>${plan.price}</span>
               <span style={{ fontSize: '14px', color: '#64748b' }}>/month</span>
             </div>
             <ul style={{ margin: '0 0 24px', padding: 0, listStyle: 'none' }}>
@@ -148,8 +148,8 @@ function Billing({ currentUser }) {
               disabled={checkoutLoading === plan.name || (isOnPaidPlan && billingStatus.plan === plan.id)}
               style={{
                 width: '100%', padding: '12px', fontSize: '15px', fontWeight: '700',
-                color: plan.popular ? 'white' : '#1a2332',
-                backgroundColor: plan.popular ? '#2563eb' : '#f1f5f9',
+                color: plan.popular ? 'white' : '#0d1b3e',
+                backgroundColor: plan.popular ? '#06b6d4' : '#f1f5f9',
                 border: 'none', borderRadius: '8px', cursor: 'pointer',
                 opacity: checkoutLoading === plan.name ? 0.7 : 1,
               }}>

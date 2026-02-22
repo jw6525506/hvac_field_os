@@ -225,7 +225,7 @@ function App() {
   };
 
   if (checkingAuth) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0a0f2c' }}>
       <p style={{ color: 'white', fontSize: '18px' }}>Loading</p>
     </div>
   );
@@ -233,11 +233,11 @@ function App() {
   if (showSignup) return <Signup onSignupSuccess={handleSignupSuccess} />;
 
   if (showReset) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', fontFamily: 'Segoe UI, sans-serif' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0a0f2c', fontFamily: 'Segoe UI, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '420px', padding: '0 20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
-          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Unified Solutions</h1>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Helix8</h1>
           <p style={{ color: '#94a3b8', margin: 0 }}>Set your new password</p>
         </div>
         <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '36px', border: '1px solid #334155' }}>
@@ -245,16 +245,16 @@ function App() {
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase' }}>New Password</label>
               <input type="password" value={resetPassword} onChange={e => setResetPassword(e.target.value)} placeholder="Min 8 characters" required
-                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: '2px solid #334155', borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0f172a', color: 'white', outline: 'none' }} />
+                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: '2px solid #334155', borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0a0f2c', color: 'white', outline: 'none' }} />
             </div>
             <div style={{ marginBottom: '24px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase' }}>Confirm Password</label>
               <input type="password" value={resetConfirm} onChange={e => setResetConfirm(e.target.value)} placeholder="Repeat password" required
-                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: '2px solid #334155', borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0f172a', color: 'white', outline: 'none' }} />
+                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: '2px solid #334155', borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0a0f2c', color: 'white', outline: 'none' }} />
             </div>
             {resetMsg && <div style={{ padding: '12px', marginBottom: '16px', backgroundColor: resetMsg.includes('successfully') ? '#f0fdf4' : '#fff1f2', color: resetMsg.includes('successfully') ? '#15803d' : '#e11d48', borderRadius: '8px', fontSize: '14px' }}>{resetMsg}</div>}
             <button type="submit" disabled={resetLoading}
-              style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: resetLoading ? '#334155' : '#2563eb', border: 'none', borderRadius: '8px', cursor: resetLoading ? 'default' : 'pointer' }}>
+              style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: resetLoading ? '#334155' : '#06b6d4', border: 'none', borderRadius: '8px', cursor: resetLoading ? 'default' : 'pointer' }}>
               {resetLoading ? 'Resetting...' : 'Reset Password'}
             </button>
           </form>
@@ -264,11 +264,11 @@ function App() {
   );
 
   if (showForgot) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', fontFamily: 'Segoe UI, sans-serif' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0a0f2c', fontFamily: 'Segoe UI, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '420px', padding: '0 20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
-          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Unified Solutions</h1>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Helix8</h1>
           <p style={{ color: '#94a3b8', margin: 0 }}>Reset your password</p>
         </div>
         <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '36px', border: '1px solid #334155' }}>
@@ -277,10 +277,10 @@ function App() {
               <div style={{ marginBottom: '24px' }}>
                 <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase' }}>Your Email</label>
                 <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="you@example.com" required
-                  style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: '2px solid #334155', borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0f172a', color: 'white', outline: 'none' }} />
+                  style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: '2px solid #334155', borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0a0f2c', color: 'white', outline: 'none' }} />
               </div>
               <button type="submit" disabled={forgotLoading}
-                style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: forgotLoading ? '#334155' : '#2563eb', border: 'none', borderRadius: '8px', cursor: forgotLoading ? 'default' : 'pointer', marginBottom: '12px' }}>
+                style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: forgotLoading ? '#334155' : '#06b6d4', border: 'none', borderRadius: '8px', cursor: forgotLoading ? 'default' : 'pointer', marginBottom: '12px' }}>
                 {forgotLoading ? 'Sending...' : 'Send Reset Link'}
               </button>
               <button type="button" onClick={() => setShowForgot(false)}
@@ -293,7 +293,7 @@ function App() {
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>📧</div>
               <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>{forgotMsg}</p>
               <button onClick={() => { setShowForgot(false); setForgotMsg(''); setForgotEmail(''); }}
-                style={{ width: '100%', padding: '12px', fontSize: '14px', fontWeight: '600', color: 'white', backgroundColor: '#2563eb', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                style={{ width: '100%', padding: '12px', fontSize: '14px', fontWeight: '600', color: 'white', backgroundColor: '#06b6d4', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
                 Back to Sign In
               </button>
             </div>
@@ -304,11 +304,11 @@ function App() {
   );
 
   if (!user) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', fontFamily: 'Segoe UI, sans-serif' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0a0f2c', fontFamily: 'Segoe UI, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '420px', padding: '0 20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
-          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Unified Solutions</h1>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Helix8</h1>
           <p style={{ color: '#94a3b8', margin: 0, fontSize: '15px' }}>Sign in to your account</p>
         </div>
         <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '36px', border: '1px solid #334155' }}>
@@ -316,29 +316,29 @@ function App() {
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase' }}>Email</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required
-                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: `2px solid ${error ? '#e11d48' : '#334155'}`, borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0f172a', color: 'white', outline: 'none' }} />
+                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: `2px solid ${error ? '#e11d48' : '#334155'}`, borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0a0f2c', color: 'white', outline: 'none' }} />
             </div>
             <div style={{ marginBottom: '24px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase' }}>Password</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="........" required
-                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: `2px solid ${error ? '#e11d48' : '#334155'}`, borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0f172a', color: 'white', outline: 'none' }} />
+                style={{ width: '100%', padding: '12px 14px', fontSize: '15px', border: `2px solid ${error ? '#e11d48' : '#334155'}`, borderRadius: '8px', boxSizing: 'border-box', backgroundColor: '#0a0f2c', color: 'white', outline: 'none' }} />
             </div>
             {error && <div style={{ padding: '12px 14px', marginBottom: '20px', backgroundColor: '#fff1f2', color: '#e11d48', borderRadius: '8px', fontSize: '14px', fontWeight: '500' }}>⚠️ {error}</div>}
             <div style={{ textAlign: 'right', marginTop: '-16px', marginBottom: '16px' }}>
               <button type="button" onClick={() => setShowForgot(true)}
-                style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+                style={{ color: '#06b6d4', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
                 Forgot password?
               </button>
             </div>
             <button type="submit" disabled={loading}
-              style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: loading ? '#334155' : '#2563eb', border: 'none', borderRadius: '8px', cursor: loading ? 'default' : 'pointer' }}>
+              style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: loading ? '#334155' : '#06b6d4', border: 'none', borderRadius: '8px', cursor: loading ? 'default' : 'pointer' }}>
               {loading ? 'Signing in' : 'Sign In'}
             </button>
           </form>
           <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #334155' }}>
             <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#64748b' }}>New HVAC company?</p>
             <button onClick={() => setShowSignup(true)}
-              style={{ width: '100%', padding: '12px', fontSize: '14px', fontWeight: '700', color: '#2563eb', backgroundColor: 'transparent', border: '2px solid #2563eb', borderRadius: '8px', cursor: 'pointer' }}>
+              style={{ width: '100%', padding: '12px', fontSize: '14px', fontWeight: '700', color: '#06b6d4', backgroundColor: 'transparent', border: '2px solid #2563eb', borderRadius: '8px', cursor: 'pointer' }}>
               Start Free 14-Day Trial
             </button>
           </div>
@@ -357,9 +357,9 @@ function App() {
     { page: 'users', icon: '👤', label: 'Team' },
   ];
 
-  const PIE_COLORS = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
+  const PIE_COLORS = ['#06b6d4', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
   const STATUS_COLORS = {
-    scheduled: { color: '#1d4ed8', bg: '#dbeafe' },
+    scheduled: { color: '#0891b2', bg: '#dbeafe' },
     in_progress: { color: '#92400e', bg: '#fef3c7' },
     completed: { color: '#15803d', bg: '#dcfce7' },
     cancelled: { color: '#64748b', bg: '#f1f5f9' },
@@ -367,10 +367,10 @@ function App() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Segoe UI, sans-serif' }}>
-      <div className='sidebar-desktop' style={{ width: '240px', backgroundColor: '#0f172a', color: 'white', padding: '24px 16px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <div className='sidebar-desktop' style={{ width: '240px', backgroundColor: '#0a0f2c', color: 'white', padding: '24px 16px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '8px 12px', marginBottom: '8px' }}>
           <div style={{ fontSize: '24px', marginBottom: '4px' }}>❄️</div>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'white' }}>Unified Solutions</h2>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'white' }}>Helix8</h2>
           {company && <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b' }}>{company.name}</p>}
         </div>
         {billingStatus && billingStatus.plan === 'trial' && (
@@ -379,7 +379,7 @@ function App() {
               {billingStatus.trialExpired ? '🔒 Trial Expired' : `⏳ ${billingStatus.trialDaysLeft} days left in trial`}
             </p>
             <button onClick={() => setCurrentPage('billing')}
-              style={{ marginTop: '6px', width: '100%', padding: '5px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '11px', fontWeight: '700' }}>
+              style={{ marginTop: '6px', width: '100%', padding: '5px', backgroundColor: '#06b6d4', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '11px', fontWeight: '700' }}>
               Upgrade Now
             </button>
           </div>
@@ -414,10 +414,10 @@ function App() {
           <div style={{ position: 'fixed', top: 0, left: '240px', right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '48px', maxWidth: '480px', textAlign: 'center' }}>
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</div>
-              <h2 style={{ margin: '0 0 12px', fontSize: '24px', fontWeight: '700', color: '#1a2332' }}>Trial Expired</h2>
+              <h2 style={{ margin: '0 0 12px', fontSize: '24px', fontWeight: '700', color: '#0d1b3e' }}>Trial Expired</h2>
               <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: '15px' }}>Your 14-day free trial has ended. Choose a plan to keep access.</p>
               <button onClick={() => setCurrentPage('billing')}
-                style={{ padding: '14px 32px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '16px' }}>
+                style={{ padding: '14px 32px', backgroundColor: '#06b6d4', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '16px' }}>
                 View Plans and Pricing
               </button>
             </div>
@@ -428,7 +428,7 @@ function App() {
           <div style={{ padding: '32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
               <div>
-                <h1 style={{ margin: '0 0 4px', fontSize: '28px', fontWeight: '700', color: '#1a2332' }}>Dashboard</h1>
+                <h1 style={{ margin: '0 0 4px', fontSize: '28px', fontWeight: '700', color: '#0d1b3e' }}>Dashboard</h1>
                 <p style={{ margin: 0, color: '#64748b', fontSize: '15px' }}>Welcome back, {user.firstName}!</p>
               </div>
               <button onClick={loadDashboard}
@@ -439,7 +439,7 @@ function App() {
 
             <div className='grid-4' style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
               {[
-                { label: 'Total Customers', value: dashData.customerCount, icon: '👥', color: '#2563eb', bg: '#eff6ff', page: 'customers' },
+                { label: 'Total Customers', value: dashData.customerCount, icon: '👥', color: '#06b6d4', bg: '#eff6ff', page: 'customers' },
                 { label: 'Total Revenue', value: `$${dashData.totalRevenue.toFixed(0)}`, icon: '💰', color: '#16a34a', bg: '#f0fdf4', page: 'invoices' },
                 { label: 'Outstanding', value: `$${dashData.outstandingRevenue.toFixed(0)}`, icon: '⏳', color: '#d97706', bg: '#fffbeb', page: 'invoices' },
                 { label: 'Work Orders', value: dashData.workOrderCount, icon: '📋', color: '#7c3aed', bg: '#faf5ff', page: 'workorders' },
@@ -451,7 +451,7 @@ function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <p style={{ margin: '0 0 8px', fontSize: '13px', color: '#64748b', fontWeight: '600' }}>{label}</p>
-                      <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#1a2332' }}>{value}</p>
+                      <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#0d1b3e' }}>{value}</p>
                     </div>
                     <div style={{ width: '44px', height: '44px', borderRadius: '10px', backgroundColor: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>{icon}</div>
                   </div>
@@ -461,7 +461,7 @@ function App() {
 
             <div className='grid-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
               {[
-                { label: 'Scheduled', value: dashData.scheduledCount, color: '#1d4ed8', bg: '#dbeafe' },
+                { label: 'Scheduled', value: dashData.scheduledCount, color: '#0891b2', bg: '#dbeafe' },
                 { label: 'In Progress', value: dashData.inProgressCount, color: '#92400e', bg: '#fef3c7' },
                 { label: 'Completed', value: dashData.completedCount, color: '#15803d', bg: '#dcfce7' },
               ].map(({ label, value, color, bg }) => (
@@ -475,18 +475,18 @@ function App() {
 
             <div className='grid-charts' style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '24px' }}>
               <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' }}>
-                <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: '700', color: '#1a2332' }}>Monthly Revenue</h2>
+                <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: '700', color: '#0d1b3e' }}>Monthly Revenue</h2>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={dashData.monthlyRevenue}>
                     <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
                     <Tooltip formatter={v => [`$${v}`, 'Revenue']} contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px' }} />
-                    <Bar dataKey="revenue" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="revenue" fill="#06b6d4" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
               <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' }}>
-                <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: '700', color: '#1a2332' }}>Job Types</h2>
+                <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: '700', color: '#0d1b3e' }}>Job Types</h2>
                 {dashData.jobTypeBreakdown.length > 0 ? (
                   <>
                     <ResponsiveContainer width="100%" height={140}>
@@ -515,8 +515,8 @@ function App() {
             <div className='grid-2' style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
               <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1a2332' }}>Recent Work Orders</h2>
-                  <button onClick={() => setCurrentPage('workorders')} style={{ fontSize: '12px', color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600' }}>View all</button>
+                  <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0d1b3e' }}>Recent Work Orders</h2>
+                  <button onClick={() => setCurrentPage('workorders')} style={{ fontSize: '12px', color: '#06b6d4', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600' }}>View all</button>
                 </div>
                 {dashData.recentWorkOrders.length === 0 ? (
                   <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>No work orders yet</p>
@@ -525,7 +525,7 @@ function App() {
                   return (
                     <div key={wo.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
                       <div>
-                        <p style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: '600', color: '#1a2332' }}>{wo.jobType} — {wo.firstName} {wo.lastName}</p>
+                        <p style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: '600', color: '#0d1b3e' }}>{wo.jobType} — {wo.firstName} {wo.lastName}</p>
                         <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>{wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString() : 'No date'}</p>
                       </div>
                       <span style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: s.color, backgroundColor: s.bg }}>{wo.status.replace('_', ' ')}</span>
@@ -535,20 +535,20 @@ function App() {
               </div>
               <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1a2332' }}>Recent Customers</h2>
-                  <button onClick={() => setCurrentPage('customers')} style={{ fontSize: '12px', color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600' }}>View all</button>
+                  <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0d1b3e' }}>Recent Customers</h2>
+                  <button onClick={() => setCurrentPage('customers')} style={{ fontSize: '12px', color: '#06b6d4', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600' }}>View all</button>
                 </div>
                 {dashData.recentCustomers.length === 0 ? (
                   <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>No customers yet</p>
                 ) : dashData.recentCustomers.map((c, idx) => {
-                  const colors = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
+                  const colors = ['#06b6d4', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
                   return (
                     <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
                       <div style={{ width: '34px', height: '34px', borderRadius: '50%', backgroundColor: colors[idx % colors.length], color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', flexShrink: 0 }}>
                         {c.firstName?.[0]}{c.lastName?.[0]}
                       </div>
                       <div>
-                        <p style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: '600', color: '#1a2332' }}>{c.firstName} {c.lastName}</p>
+                        <p style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: '600', color: '#0d1b3e' }}>{c.firstName} {c.lastName}</p>
                         <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>{c.email || c.phone || 'No contact info'}</p>
                       </div>
                     </div>
@@ -558,10 +558,10 @@ function App() {
             </div>
 
             <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0' }}>
-              <h2 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: '700', color: '#1a2332' }}>Quick Actions</h2>
+              <h2 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: '700', color: '#0d1b3e' }}>Quick Actions</h2>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 {[
-                  { label: '+ New Customer', page: 'customers', color: '#2563eb' },
+                  { label: '+ New Customer', page: 'customers', color: '#06b6d4' },
                   { label: '+ New Work Order', page: 'workorders', color: '#16a34a' },
                   { label: '+ New Invoice', page: 'invoices', color: '#7c3aed' },
                 ].map(({ label, page, color }) => (

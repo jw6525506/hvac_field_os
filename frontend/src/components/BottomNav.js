@@ -13,7 +13,7 @@ function BottomNav({ currentPage, setCurrentPage }) {
     <div className="bottom-nav" style={{
       display: 'none',
       position: 'fixed', bottom: 0, left: 0, right: 0,
-      backgroundColor: '#0f172a', borderTop: '1px solid #1e293b',
+      backgroundColor: '#0a0f2c', borderTop: '1px solid #1e293b',
       zIndex: 999, height: '62px',
       gridTemplateColumns: 'repeat(5, 1fr)',
     }}>
@@ -23,7 +23,7 @@ function BottomNav({ currentPage, setCurrentPage }) {
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             justifyContent: 'center', gap: '2px', border: 'none',
             backgroundColor: 'transparent', cursor: 'pointer', padding: '8px 4px',
-            color: currentPage === page ? '#2563eb' : '#64748b',
+            color: currentPage === page ? '#06b6d4' : '#64748b',
             borderTop: currentPage === page ? '2px solid #2563eb' : '2px solid transparent',
           }}>
           <span style={{ fontSize: '18px' }}>{icon}</span>

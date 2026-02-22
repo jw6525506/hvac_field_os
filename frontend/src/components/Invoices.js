@@ -5,12 +5,12 @@ const API_BASE = 'http://localhost:3000/api';
 const S = {
   page: { padding: '32px', fontFamily: "'DM Sans', 'Segoe UI', sans-serif", backgroundColor: '#f0f4f8', minHeight: '100vh' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' },
-  title: { fontSize: '28px', fontWeight: '700', color: '#1a2332', margin: 0, letterSpacing: '-0.5px' },
-  addBtn: { padding: '11px 22px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' },
+  title: { fontSize: '28px', fontWeight: '700', color: '#0d1b3e', margin: 0, letterSpacing: '-0.5px' },
+  addBtn: { padding: '11px 22px', backgroundColor: '#06b6d4', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' },
   filters: { display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' },
   filterBtn: (active) => ({
     padding: '8px 16px', borderRadius: '20px', border: '2px solid', cursor: 'pointer', fontWeight: '600', fontSize: '13px',
-    backgroundColor: active ? '#1a2332' : 'white', color: active ? 'white' : '#64748b', borderColor: active ? '#1a2332' : '#e2e8f0',
+    backgroundColor: active ? '#0d1b3e' : 'white', color: active ? 'white' : '#64748b', borderColor: active ? '#0d1b3e' : '#e2e8f0',
   }),
   summaryBar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px', marginBottom: '28px' },
   summaryCard: (color) => ({ backgroundColor: color, borderRadius: '12px', padding: '20px', color: 'white' }),
@@ -18,34 +18,34 @@ const S = {
   summaryValue: { fontSize: '28px', fontWeight: '700', margin: 0 },
   card: { backgroundColor: 'white', padding: '24px', marginBottom: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' },
-  invoiceNum: { fontWeight: '700', fontSize: '16px', color: '#1a2332', margin: '0 0 4px' },
+  invoiceNum: { fontWeight: '700', fontSize: '16px', color: '#0d1b3e', margin: '0 0 4px' },
   customerName: { fontSize: '14px', color: '#64748b', margin: 0 },
   totalAmount: { fontSize: '26px', fontWeight: '700', color: '#16a34a', margin: '0 0 6px', textAlign: 'right' },
   lineItemsTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '16px', fontSize: '14px' },
   th: { textAlign: 'left', padding: '8px 0', color: '#94a3b8', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', borderBottom: '1px solid #f1f5f9' },
   td: { padding: '8px 0', borderBottom: '1px solid #f8fafc', color: '#334155' },
   totalsRow: { display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '14px', color: '#64748b' },
-  totalRow: { display: 'flex', justifyContent: 'space-between', padding: '10px 0 0', marginTop: '4px', borderTop: '2px solid #e2e8f0', fontWeight: '700', fontSize: '16px', color: '#1a2332' },
+  totalRow: { display: 'flex', justifyContent: 'space-between', padding: '10px 0 0', marginTop: '4px', borderTop: '2px solid #e2e8f0', fontWeight: '700', fontSize: '16px', color: '#0d1b3e' },
   cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' },
   badge: (color, bg) => ({ display: 'inline-block', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', color, backgroundColor: bg }),
   actionBtns: { display: 'flex', gap: '8px' },
-  emailBtn: { padding: '7px 14px', backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '7px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
+  emailBtn: { padding: '7px 14px', backgroundColor: '#eff6ff', color: '#06b6d4', border: '1px solid #bfdbfe', borderRadius: '7px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
   markPaidBtn: { padding: '7px 14px', backgroundColor: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
   markUnpaidBtn: { padding: '7px 14px', backgroundColor: '#fef9c3', color: '#a16207', border: '1px solid #fef08a', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
   deleteBtn: { padding: '7px 14px', backgroundColor: '#fff1f2', color: '#e11d48', border: '1px solid #fecdd3', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' },
   emptyState: { textAlign: 'center', padding: '60px 20px', color: '#94a3b8' },
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(2px)' },
   modal: { backgroundColor: 'white', padding: '32px', borderRadius: '16px', width: '600px', maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' },
-  modalTitle: { margin: '0 0 24px', fontSize: '20px', fontWeight: '700', color: '#1a2332' },
+  modalTitle: { margin: '0 0 24px', fontSize: '20px', fontWeight: '700', color: '#0d1b3e' },
   label: { display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '5px' },
-  input: { width: '100%', padding: '10px 12px', marginBottom: '16px', border: '2px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', color: '#1a2332', outline: 'none' },
-  select: { width: '100%', padding: '10px 12px', marginBottom: '16px', border: '2px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', color: '#1a2332', backgroundColor: 'white' },
+  input: { width: '100%', padding: '10px 12px', marginBottom: '16px', border: '2px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', color: '#0d1b3e', outline: 'none' },
+  select: { width: '100%', padding: '10px 12px', marginBottom: '16px', border: '2px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', color: '#0d1b3e', backgroundColor: 'white' },
   lineItemGrid: { display: 'grid', gridTemplateColumns: '2fr 80px 100px 36px', gap: '8px', alignItems: 'end', marginBottom: '8px' },
-  addItemBtn: { padding: '7px 14px', backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
+  addItemBtn: { padding: '7px 14px', backgroundColor: '#eff6ff', color: '#06b6d4', border: '1px solid #bfdbfe', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
   totalsBox: { backgroundColor: '#f8fafc', borderRadius: '10px', padding: '16px', marginBottom: '20px' },
   modalFooter: { display: 'flex', justifyContent: 'flex-end', gap: '10px' },
   cancelBtn: { padding: '10px 20px', backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' },
-  saveBtn: { padding: '10px 22px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' },
+  saveBtn: { padding: '10px 22px', backgroundColor: '#06b6d4', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' },
   toast: (type) => ({ position: 'fixed', bottom: '24px', right: '24px', padding: '14px 20px', borderRadius: '10px', color: 'white', fontWeight: '600', fontSize: '14px', zIndex: 2000, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', backgroundColor: type === 'error' ? '#e11d48' : '#16a34a' }),
   confirmModal: { backgroundColor: 'white', padding: '28px', borderRadius: '14px', width: '380px', maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', textAlign: 'center' },
   confirmDelete: { padding: '10px 24px', backgroundColor: '#e11d48', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' },
@@ -215,7 +215,7 @@ export default function Invoices() {
       {/* Summary Bar */}
       {!loading && (
         <div style={S.summaryBar}>
-          <div style={S.summaryCard('#2563eb')}>
+          <div style={S.summaryCard('#06b6d4')}>
             <p style={S.summaryLabel}>Total Invoices</p>
             <p style={S.summaryValue}>{invoices.length}</p>
           </div>
@@ -410,7 +410,7 @@ export default function Invoices() {
         <div style={S.overlay} onClick={e => e.target === e.currentTarget && setDeleteTarget(null)}>
           <div style={S.confirmModal}>
             <div style={{ fontSize: '36px', marginBottom: '12px' }}>🗑️</div>
-            <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '700', color: '#1a2332' }}>Delete Invoice?</h3>
+            <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '700', color: '#0d1b3e' }}>Delete Invoice?</h3>
             <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 24px' }}>
               This will permanently delete <strong>{deleteTarget.invoiceNumber}</strong>.
             </p>

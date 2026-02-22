@@ -62,7 +62,7 @@ function Signup({ onSignupSuccess }) {
   const inputStyle = {
     width: '100%', padding: '12px 14px', fontSize: '15px',
     border: '2px solid #334155', borderRadius: '8px',
-    boxSizing: 'border-box', backgroundColor: '#0f172a',
+    boxSizing: 'border-box', backgroundColor: '#0a0f2c',
     color: 'white', outline: 'none',
   };
 
@@ -72,13 +72,13 @@ function Signup({ onSignupSuccess }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Segoe UI, sans-serif', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0a0f2c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Segoe UI, sans-serif', padding: '20px' }}>
       <div style={{ width: '100%', maxWidth: '480px' }}>
 
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>❄️</div>
-          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Unified Solutions</h1>
+          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>Helix8</h1>
           <p style={{ color: '#94a3b8', margin: 0, fontSize: '15px' }}>Start your 14-day free trial</p>
         </div>
 
@@ -89,11 +89,11 @@ function Signup({ onSignupSuccess }) {
               <div style={{
                 width: '32px', height: '32px', borderRadius: '50%', display: 'flex',
                 alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700',
-                backgroundColor: step >= s ? '#2563eb' : '#1e293b',
+                backgroundColor: step >= s ? '#06b6d4' : '#1e293b',
                 color: step >= s ? 'white' : '#64748b',
-                border: `2px solid ${step >= s ? '#2563eb' : '#334155'}`,
+                border: `2px solid ${step >= s ? '#06b6d4' : '#334155'}`,
               }}>{s}</div>
-              {s < 2 && <div style={{ width: '40px', height: '2px', backgroundColor: step > s ? '#2563eb' : '#334155' }} />}
+              {s < 2 && <div style={{ width: '40px', height: '2px', backgroundColor: step > s ? '#06b6d4' : '#334155' }} />}
             </React.Fragment>
           ))}
         </div>
@@ -121,7 +121,7 @@ function Signup({ onSignupSuccess }) {
               </div>
               {error && <div style={{ padding: '12px', marginBottom: '16px', backgroundColor: '#fff1f2', color: '#e11d48', borderRadius: '8px', fontSize: '14px' }}>⚠️ {error}</div>}
               <button type="submit"
-                style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: '#2563eb', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                style={{ width: '100%', padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: '#06b6d4', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
                 Continue →
               </button>
             </form>
@@ -160,7 +160,7 @@ function Signup({ onSignupSuccess }) {
               </div>
 
               {/* Trial callout */}
-              <div style={{ padding: '12px 16px', backgroundColor: '#0f172a', borderRadius: '8px', marginBottom: '20px', border: '1px solid #1e40af' }}>
+              <div style={{ padding: '12px 16px', backgroundColor: '#0a0f2c', borderRadius: '8px', marginBottom: '20px', border: '1px solid #1e40af' }}>
                 <p style={{ margin: 0, fontSize: '13px', color: '#93c5fd' }}>
                   ✅ 14-day free trial — no credit card required
                 </p>
@@ -170,11 +170,11 @@ function Signup({ onSignupSuccess }) {
 
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button type="button" onClick={() => { setStep(1); setError(''); }}
-                  style={{ flex: 1, padding: '13px', fontSize: '15px', fontWeight: '700', color: '#94a3b8', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '13px', fontSize: '15px', fontWeight: '700', color: '#94a3b8', backgroundColor: '#0a0f2c', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer' }}>
                   ← Back
                 </button>
                 <button type="submit" disabled={loading}
-                  style={{ flex: 2, padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: loading ? '#334155' : '#2563eb', border: 'none', borderRadius: '8px', cursor: loading ? 'default' : 'pointer' }}>
+                  style={{ flex: 2, padding: '13px', fontSize: '15px', fontWeight: '700', color: 'white', backgroundColor: loading ? '#334155' : '#06b6d4', border: 'none', borderRadius: '8px', cursor: loading ? 'default' : 'pointer' }}>
                   {loading ? 'Creating account...' : 'Start Free Trial'}
                 </button>
               </div>
@@ -185,7 +185,7 @@ function Signup({ onSignupSuccess }) {
         <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#64748b' }}>
           Already have an account?{' '}
           <button onClick={() => onSignupSuccess(null, null)}
-            style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+            style={{ color: '#06b6d4', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
             Sign in
           </button>
         </p>
