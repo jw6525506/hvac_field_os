@@ -6,6 +6,7 @@ import Invoices from './components/Invoices';
 import Billing from './components/Billing';
 import Signup from './components/Signup';
 import Users from './components/Users';
+import MapView from './components/MapView';
 import BottomNav from './components/BottomNav';
 
 const API_BASE = 'http://localhost:3000/api';
@@ -352,6 +353,7 @@ function App() {
     { page: 'workorders', icon: '📋', label: 'Work Orders' },
     { page: 'invoices', icon: '💰', label: 'Invoices' },
     { page: 'billing', icon: '💳', label: 'Billing' },
+    { page: 'map', icon: '🗺️', label: 'Job Map' },
     { page: 'users', icon: '👤', label: 'Team' },
   ];
 
@@ -578,6 +580,7 @@ function App() {
         {currentPage === 'workorders' && <WorkOrders />}
         {currentPage === 'invoices' && <Invoices />}
         {currentPage === 'billing' && <Billing currentUser={user} />}
+        {currentPage === 'map' && <MapView />}
         {currentPage === 'users' && user.role === 'admin' && <Users />}
       </div>
     </div>
