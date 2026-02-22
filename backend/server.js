@@ -4,12 +4,37 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { message: 'Too many login attempts. Please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const forgotLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { message: 'Too many password reset attempts. Please try again in 1 hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { message: 'Too many requests. Please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, '/app/uploads/'),
@@ -60,6 +85,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/uploads', express.static('/app/uploads'));
+app.use(generalLimiter);
 
 // ─── AUTH MIDDLEWARE ──────────────────────────────────────
 
@@ -98,7 +124,7 @@ app.get('/health', async (req, res) => {
 
 // ─── AUTH ────────────────────────────────────────────────
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: 'Email and password are required' });
@@ -185,7 +211,7 @@ app.post('/api/auth/register-company', async (req, res) => {
 
 // ─── PASSWORD RESET ───────────────────────────────────────
 
-app.post('/api/auth/forgot-password', async (req, res) => {
+app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Email is required' });
   try {
@@ -745,5 +771,6 @@ app.listen(PORT, () => {
   console.log('Auth: JWT + Multi-tenant enabled');
   console.log('Billing: Stripe enabled');
   console.log('Email: Resend enabled');
+  console.log('Rate Limiting: Enabled');
   console.log('========================================');
 });
