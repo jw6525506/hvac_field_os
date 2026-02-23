@@ -465,11 +465,14 @@ app.put('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
 app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
   if (parseInt(req.params.id) === req.user.id) return res.status(400).json({ message: 'You cannot delete your own account' });
   try {
+    await pool.query('UPDATE "WorkOrders" SET "assignedTo" = NULL WHERE "assignedTo" = $1 AND "companyId" = $2', [req.params.id, req.user.companyId]);
+    await pool.query('UPDATE "Inventory" SET "assignedTo" = NULL WHERE "assignedTo" = $1 AND "companyId" = $2', [req.params.id, req.user.companyId]);
     const result = await pool.query('DELETE FROM "Users" WHERE id=$1 AND "companyId"=$2 RETURNING *', [req.params.id, req.user.companyId]);
     if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
     res.json({ message: 'User deleted' });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to delete user' });
+    console.error('Delete user error:', err.message);
+    res.status(500).json({ message: 'Failed to delete user: ' + err.message });
   }
 });
 
@@ -589,11 +592,14 @@ app.put('/api/work-orders/:id', requireAuth, async (req, res) => {
 
 app.delete('/api/work-orders/:id', requireAuth, async (req, res) => {
   try {
+    // Clear any invoice references first
+    await pool.query('UPDATE "Invoices" SET "workOrderId" = NULL WHERE "workOrderId" = $1 AND "companyId" = $2', [req.params.id, req.user.companyId]);
     const result = await pool.query('DELETE FROM "WorkOrders" WHERE id=$1 AND "companyId"=$2 RETURNING *', [req.params.id, req.user.companyId]);
     if (result.rows.length === 0) return res.status(404).json({ message: 'Work order not found' });
     res.json({ message: 'Work order deleted' });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to delete work order' });
+    console.error('Delete work order error:', err.message);
+    res.status(500).json({ message: 'Failed to delete work order: ' + err.message });
   }
 });
 
