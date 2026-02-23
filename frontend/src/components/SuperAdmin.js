@@ -8,6 +8,8 @@ function SuperAdmin() {
   const [token, setToken] = useState(localStorage.getItem('superAdminToken') || '');
   const [stats, setStats] = useState(null);
   const [companies, setCompanies] = useState([]);
+  const [churnRisk, setChurnRisk] = useState([]);
+  const [neverUsed, setNeverUsed] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
@@ -47,6 +49,8 @@ function SuperAdmin() {
       const data = await res.json();
       setStats(data.stats);
       setCompanies(data.companies);
+      setChurnRisk(data.churnRisk || []);
+      setNeverUsed(data.neverUsed || []);
     } catch (err) {
       setError('Failed to load data');
     } finally {
@@ -62,7 +66,7 @@ function SuperAdmin() {
     setCompanies([]);
   };
 
-  const filtered = companies.filter(c => {
+  const filtered = (companies || []).filter(c => {
     const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
       (c.email || '').toLowerCase().includes(search.toLowerCase()) ||
       (c.city || '').toLowerCase().includes(search.toLowerCase());
@@ -70,7 +74,7 @@ function SuperAdmin() {
     return matchSearch && matchIndustry;
   });
 
-  const industries = [...new Set(companies.map(c => c.industry).filter(Boolean))];
+  const industries = [...new Set((companies || []).map(c => c.industry).filter(Boolean))];
 
   const S = {
     page: { minHeight: '100vh', backgroundColor: '#04081a', color: 'white', fontFamily: 'Segoe UI, sans-serif' },
@@ -148,6 +152,68 @@ function SuperAdmin() {
             <div style={S.statCard}>
               <div style={S.statNum}>{stats.activeToday}</div>
               <div style={S.statLabel}>Active Today</div>
+            </div>
+          </div>
+        )}
+
+        {/* MRR + Subscription Stats */}
+        {stats && (
+          <div style={{ ...S.statsGrid, marginBottom: '24px' }}>
+            <div style={{ ...S.statCard, borderColor: 'rgba(34,197,94,0.3)' }}>
+              <div style={{ ...S.statNum, color: '#22c55e' }}>${stats.mrr || 0}</div>
+              <div style={S.statLabel}>Monthly Recurring Revenue</div>
+            </div>
+            <div style={S.statCard}>
+              <div style={S.statNum}>{stats.trialing || 0}</div>
+              <div style={S.statLabel}>On Free Trial</div>
+            </div>
+            <div style={S.statCard}>
+              <div style={{ ...S.statNum, color: '#22c55e' }}>{stats.paid || 0}</div>
+              <div style={S.statLabel}>Paying Customers</div>
+            </div>
+            <div style={{ ...S.statCard, borderColor: 'rgba(239,68,68,0.3)' }}>
+              <div style={{ ...S.statNum, color: '#ef4444' }}>{stats.cancelled || 0}</div>
+              <div style={S.statLabel}>Cancelled</div>
+            </div>
+          </div>
+        )}
+
+        {/* Churn Risk Alerts */}
+        {churnRisk.length > 0 && (
+          <div style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+            <div style={{ fontWeight: '700', color: '#ef4444', marginBottom: '12px', fontSize: '15px' }}>
+              ⚠ Churn Risk — {churnRisk.length} companies signed up 3+ days ago with zero work orders
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {churnRisk.map(c => (
+                <div key={c.id} style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', padding: '8px 14px', fontSize: '13px' }}>
+                  <span style={{ fontWeight: '600', color: 'white' }}>{c.name}</span>
+                  <span style={{ color: '#94a3b8', marginLeft: '8px' }}>{c.email}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: '10px', fontSize: '13px', color: '#94a3b8' }}>
+              💡 Call or email these companies — they signed up but never created a work order. One personal touch could save the account.
+            </div>
+          </div>
+        )}
+
+        {/* Never Used Alerts */}
+        {neverUsed.length > 0 && (
+          <div style={{ backgroundColor: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+            <div style={{ fontWeight: '700', color: '#fbbf24', marginBottom: '12px', fontSize: '15px' }}>
+              👋 Never Added a Customer — {neverUsed.length} companies need onboarding help
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {neverUsed.map(c => (
+                <div key={c.id} style={{ backgroundColor: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '8px', padding: '8px 14px', fontSize: '13px' }}>
+                  <span style={{ fontWeight: '600', color: 'white' }}>{c.name}</span>
+                  <span style={{ color: '#94a3b8', marginLeft: '8px' }}>{c.email}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: '10px', fontSize: '13px', color: '#94a3b8' }}>
+              💡 These companies signed up but never added a customer. Send them a quick setup guide or jump on a call.
             </div>
           </div>
         )}

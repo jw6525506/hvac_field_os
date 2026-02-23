@@ -769,16 +769,46 @@ app.get('/api/super-admin/stats', requireSuperAdmin, async (req, res) => {
       ORDER BY c."createdAt" DESC
     `);
 
+    const now = new Date();
     const totalCompanies = companies.rows.length;
     const totalUsers = companies.rows.reduce((sum, c) => sum + parseInt(c.userCount), 0);
     const totalRevenue = companies.rows.reduce((sum, c) => sum + parseFloat(c.totalRevenue), 0);
-    const activeToday = companies.rows.filter(c => {
-      const d = new Date(c.updatedAt);
-      const now = new Date();
-      return (now - d) < 24 * 60 * 60 * 1000;
-    }).length;
 
-    res.json({ companies: companies.rows, stats: { totalCompanies, totalUsers, totalRevenue, activeToday } });
+    // MRR based on subscription plan
+    const planPrices = { basic: 79, pro: 149, enterprise: 299 };
+    const subs = await pool.query('SELECT * FROM "Subscriptions"');
+    const mrr = subs.rows.reduce((sum, s) => {
+      if (s.status === 'active' || s.status === 'trialing') {
+        return sum + (planPrices[s.plan] || 79);
+      }
+      return sum;
+    }, 0);
+
+    const trialing = subs.rows.filter(s => s.status === 'trialing').length;
+    const paid = subs.rows.filter(s => s.status === 'active').length;
+    const cancelled = subs.rows.filter(s => s.status === 'cancelled').length;
+
+    // Active today
+    const activeToday = companies.rows.filter(c => (now - new Date(c.updatedAt)) < 24 * 60 * 60 * 1000).length;
+
+    // Churn risk - signed up 3+ days ago but zero work orders
+    const churnRisk = companies.rows.filter(c => {
+      const daysSinceSignup = (now - new Date(c.createdAt)) / (1000 * 60 * 60 * 24);
+      return daysSinceSignup >= 3 && parseInt(c.workOrderCount) === 0;
+    });
+
+    // Never logged in - zero customers and zero work orders after 1 day
+    const neverUsed = companies.rows.filter(c => {
+      const daysSinceSignup = (now - new Date(c.createdAt)) / (1000 * 60 * 60 * 24);
+      return daysSinceSignup >= 1 && parseInt(c.customerCount) === 0;
+    });
+
+    res.json({
+      companies: companies.rows,
+      stats: { totalCompanies, totalUsers, totalRevenue, activeToday, mrr, trialing, paid, cancelled },
+      churnRisk,
+      neverUsed
+    });
   } catch (err) {
     console.error('Super admin stats error:', err.message);
     res.status(500).json({ message: 'Failed to load stats' });
