@@ -72,6 +72,11 @@ function App() {
       }).catch(() => {});
   }, [user]);
   const [language, setLanguage] = useState(localStorage.getItem('language') || 'en');
+  const [twoFAStep, setTwoFAStep] = useState(false);
+  const [twoFAEmail, setTwoFAEmail] = useState('');
+  const [twoFACode, setTwoFACode] = useState('');
+  const [twoFAError, setTwoFAError] = useState('');
+  const [twoFALoading, setTwoFALoading] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [email, setEmail] = useState('');
@@ -184,6 +189,31 @@ function App() {
     } catch (err) { console.error('Dashboard error:', err); }
   };
 
+  const handle2FAVerify = async () => {
+    setTwoFALoading(true);
+    setTwoFAError('');
+    try {
+      const res = await fetch('http://localhost:3000/api/auth/2fa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: twoFAEmail, code: twoFACode })
+      });
+      const data = await res.json();
+      if (!res.ok) { setTwoFAError(data.message); return; }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      if (data.company) localStorage.setItem('company', JSON.stringify(data.company));
+      setUser(data.user);
+      setTwoFAStep(false);
+      setTwoFACode('');
+      setCurrentPage(data.user.role === 'technician' ? 'workorders' : 'dashboard');
+    } catch (err) {
+      setTwoFAError('Connection error');
+    } finally {
+      setTwoFALoading(false);
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
@@ -194,11 +224,14 @@ function App() {
       });
       const data = await response.json();
       if (!response.ok) { setError(data.message || 'Invalid email or password'); return; }
-      setUser(data.user);
-      if (data.company) setCompany(data.company);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      if (data.company) localStorage.setItem('company', JSON.stringify(data.company));
+      setShowLanding(false);
+      setTwoFAEmail(email);
+      await fetch('http://localhost:3000/api/auth/2fa/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      setTwoFAStep(true);
     } catch (err) {
       setError('Cannot connect to server.');
     } finally { setLoading(false); }
@@ -357,6 +390,38 @@ function App() {
       onLogin={() => setShowLanding(false)}
       onSignup={() => { setShowLanding(false); setShowSignup(true); }}
     />;
+  }
+
+  if (twoFAStep) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#0a0f2c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Segoe UI, sans-serif', padding: '20px' }}>
+        <div style={{ width: '100%', maxWidth: '400px', backgroundColor: '#0d1426', borderRadius: '16px', padding: '40px', border: '1px solid rgba(6,182,212,0.2)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '12px' }}>📧</div>
+            <h1 style={{ color: 'white', fontSize: '24px', fontWeight: '700', margin: '0 0 8px' }}>Check your email</h1>
+            <p style={{ color: '#94a3b8', margin: 0, fontSize: '14px' }}>We sent a 6-digit code to<br/><strong style={{ color: 'white' }}>{twoFAEmail}</strong></p>
+          </div>
+          <input
+            type="text" maxLength={6} value={twoFACode}
+            onChange={e => setTwoFACode(e.target.value.replace(/\D/g, ''))}
+            placeholder="000000"
+            style={{ width: '100%', padding: '16px', fontSize: '32px', fontWeight: '800', letterSpacing: '12px', textAlign: 'center', backgroundColor: '#0a0f2c', border: '2px solid rgba(6,182,212,0.3)', borderRadius: '12px', color: 'white', outline: 'none', boxSizing: 'border-box', marginBottom: '16px' }}
+            onKeyDown={e => e.key === 'Enter' && handle2FAVerify()}
+            autoFocus
+          />
+          {twoFAError && <p style={{ color: '#f87171', fontSize: '14px', textAlign: 'center', marginBottom: '16px' }}>{twoFAError}</p>}
+          <button onClick={handle2FAVerify} disabled={twoFALoading || twoFACode.length !== 6}
+            style={{ width: '100%', padding: '14px', backgroundColor: twoFACode.length === 6 ? '#06b6d4' : '#1e293b', color: twoFACode.length === 6 ? '#0a0f2c' : '#64748b', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '700', cursor: twoFACode.length === 6 ? 'pointer' : 'not-allowed' }}>
+            {twoFALoading ? 'Verifying...' : 'Verify Code'}
+          </button>
+          <button onClick={() => { setTwoFAStep(false); setTwoFACode(''); setTwoFAError(''); setShowLanding(true); }}
+            style={{ width: '100%', padding: '12px', backgroundColor: 'transparent', color: '#94a3b8', border: 'none', fontSize: '14px', cursor: 'pointer', marginTop: '8px' }}>
+            Back to login
+          </button>
+          <p style={{ color: '#64748b', fontSize: '12px', textAlign: 'center', marginTop: '16px' }}>Code expires in 10 minutes</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user) return (

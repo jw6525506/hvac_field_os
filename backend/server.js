@@ -734,6 +734,76 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
 
 
 
+
+// ─── TWO FACTOR AUTH ─────────────────────────────────────
+
+app.post('/api/auth/2fa/send', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: 'Email required' });
+  try {
+    const userResult = await pool.query('SELECT * FROM "Users" WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) return res.status(200).json({ message: 'If this email exists, a code was sent' });
+    const user = userResult.rows[0];
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await pool.query('UPDATE "TwoFactorCodes" SET used = TRUE WHERE "userId" = $1 AND used = FALSE', [user.id]);
+    await pool.query('INSERT INTO "TwoFactorCodes" ("userId", code, "expiresAt") VALUES ($1, $2, $3)', [user.id, code, expiresAt]);
+
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    await resend.emails.send({
+      from: 'Helix8 <onboarding@resend.dev>',
+      to: email,
+      subject: 'Your Helix8 Login Code',
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+          <h1 style="font-size: 28px; font-weight: 800; color: #0a0f2c;">Helix<span style="color: #06b6d4;">8</span></h1>
+          <h2 style="color: #0d1b3e;">Your login code</h2>
+          <div style="font-size: 48px; font-weight: 800; letter-spacing: 12px; color: #06b6d4; padding: 24px; background: #f8fafc; border-radius: 12px; text-align: center;">${code}</div>
+          <p style="color: #64748b; margin-top: 16px;">This code expires in 10 minutes. Do not share it with anyone.</p>
+          <p style="color: #94a3b8; font-size: 13px;">If you did not request this code, ignore this email.</p>
+        </div>
+      `
+    });
+
+    res.json({ message: 'Code sent' });
+  } catch (err) {
+    console.error('2FA send error:', err.message);
+    res.status(500).json({ message: 'Failed to send code' });
+  }
+});
+
+app.post('/api/auth/2fa/verify', async (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) return res.status(400).json({ message: 'Email and code required' });
+  try {
+    const userResult = await pool.query('SELECT * FROM "Users" WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) return res.status(401).json({ message: 'Invalid code' });
+    const user = userResult.rows[0];
+
+    const codeResult = await pool.query(
+      'SELECT * FROM "TwoFactorCodes" WHERE "userId" = $1 AND code = $2 AND used = FALSE AND "expiresAt" > NOW() ORDER BY "createdAt" DESC LIMIT 1',
+      [user.id, code]
+    );
+
+    if (codeResult.rows.length === 0) return res.status(401).json({ message: 'Invalid or expired code' });
+
+    await pool.query('UPDATE "TwoFactorCodes" SET used = TRUE WHERE id = $1', [codeResult.rows[0].id]);
+
+    const companyResult = await pool.query('SELECT * FROM "Companies" WHERE id = $1', [user.companyId]);
+    const token = jwt.sign({ userId: user.id, companyId: user.companyId, role: user.role }, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '7d' });
+
+    res.json({
+      token,
+      user: { id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role, companyId: user.companyId },
+      company: companyResult.rows[0]
+    });
+  } catch (err) {
+    console.error('2FA verify error:', err.message);
+    res.status(500).json({ message: 'Verification failed' });
+  }
+});
+
 // ─── COMPANY BRANDING ────────────────────────────────────
 
 app.get('/api/company/branding', requireAuth, async (req, res) => {
