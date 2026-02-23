@@ -733,6 +733,45 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
 
 
 
+
+// ─── COMPANY BRANDING ────────────────────────────────────
+
+app.get('/api/company/branding', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT name, logo, "brandColor", "companyTagline" FROM "Companies" WHERE id = $1',
+      [req.user.companyId]
+    );
+    res.json({ branding: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load branding' });
+  }
+});
+
+app.put('/api/company/branding', requireAuth, requireAdmin, async (req, res) => {
+  const { brandColor, companyTagline } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE "Companies" SET "brandColor"=$1, "companyTagline"=$2, "updatedAt"=NOW() WHERE id=$3 RETURNING *`,
+      [brandColor || '#06b6d4', companyTagline || null, req.user.companyId]
+    );
+    res.json({ message: 'Branding updated', company: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update branding' });
+  }
+});
+
+app.post('/api/company/logo', requireAuth, requireAdmin, upload.single('logo'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+  const logoUrl = `/uploads/${req.file.filename}`;
+  try {
+    await pool.query('UPDATE "Companies" SET logo=$1, "updatedAt"=NOW() WHERE id=$2', [logoUrl, req.user.companyId]);
+    res.json({ message: 'Logo uploaded', logoUrl });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to upload logo' });
+  }
+});
+
 // ─── SUPER ADMIN ─────────────────────────────────────────
 
 const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || 'helix8-octave-labs-2026';

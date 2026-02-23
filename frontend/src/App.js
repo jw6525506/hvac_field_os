@@ -12,6 +12,7 @@ import Users from './components/Users';
 import MapView from './components/MapView';
 import LandingPage from './components/LandingPage';
 import SuperAdmin from './components/SuperAdmin';
+import Settings from './components/Settings';
 import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 
@@ -40,7 +41,36 @@ if (!document.getElementById('mobile-styles')) {
 
 function App() {
   const { t } = useTranslation();
+  const [branding, setBranding] = useState(() => {
+    const company = JSON.parse(localStorage.getItem('company') || '{}');
+    return { logo: company.logo || '', brandColor: company.brandColor || '#06b6d4', name: company.name || 'Helix8', tagline: company.companyTagline || '' };
+  });
+
+  useEffect(() => {
+    const handleBrandingUpdate = () => {
+      const company = JSON.parse(localStorage.getItem('company') || '{}');
+      setBranding({ logo: company.logo || '', brandColor: company.brandColor || '#06b6d4', name: company.name || 'Helix8', tagline: company.companyTagline || '' });
+    };
+    window.addEventListener('brandingUpdated', handleBrandingUpdate);
+    return () => window.removeEventListener('brandingUpdated', handleBrandingUpdate);
+  }, []);
+
+
   const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || !user) return;
+    fetch('http://localhost:3000/api/company/branding', { headers: { Authorization: 'Bearer ' + token } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.branding) {
+          setBranding({ logo: data.branding.logo || '', brandColor: data.branding.brandColor || '#06b6d4', name: data.branding.name || 'Helix8', tagline: data.branding.companyTagline || '' });
+          const stored = JSON.parse(localStorage.getItem('company') || '{}');
+          localStorage.setItem('company', JSON.stringify({ ...stored, ...data.branding }));
+        }
+      }).catch(() => {});
+  }, [user]);
   const [language, setLanguage] = useState(localStorage.getItem('language') || 'en');
   const [showLanding, setShowLanding] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -382,6 +412,7 @@ function App() {
     { page: 'billing', icon: '💳', label: t('billing') },
     { page: 'map', icon: '🗺️', label: t('jobMap') },
     { page: 'inventory', icon: '📦', label: t('inventory') },
+    { page: 'settings', icon: '⚙️', label: 'Settings' },
     { page: 'users', icon: '👤', label: 'Team' },
   ];
 
@@ -398,7 +429,12 @@ function App() {
       <div className='sidebar-desktop' style={{ width: '240px', backgroundColor: '#0a0f2c', color: 'white', padding: '24px 16px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '8px 12px', marginBottom: '8px' }}>
           <div style={{ fontSize: '24px', marginBottom: '4px' }}>❄️</div>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'white' }}>Helix8</h2>
+          {branding.logo ? (
+            <img src={`http://localhost:3000${branding.logo}`} alt="Logo" style={{ height: '36px', maxWidth: '140px', objectFit: 'contain' }} />
+          ) : (
+            <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'white' }}>Helix<span style={{ color: branding.brandColor || '#06b6d4' }}>8</span></h2>
+          )}
+          {branding.tagline && <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{branding.tagline}</div>}
           {company && <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b' }}>{company.name}</p>}
         </div>
         {billingStatus && billingStatus.plan === 'trial' && (
@@ -620,6 +656,7 @@ function App() {
         {currentPage === 'billing' && user.role !== 'technician' && <Billing currentUser={user} />}
         {currentPage === 'map' && <MapView />}
         {currentPage === 'inventory' && <Inventory />}
+        {currentPage === 'settings' && <Settings />}
         {currentPage === 'users' && user.role === 'admin' && <Users />}
       </div>
     </div>
