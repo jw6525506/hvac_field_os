@@ -11,6 +11,7 @@ import Signup from './components/Signup';
 import Users from './components/Users';
 import MapView from './components/MapView';
 import LandingPage from './components/LandingPage';
+import SuperAdmin from './components/SuperAdmin';
 import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 
@@ -316,6 +317,10 @@ function App() {
       </div>
     </div>
   );
+
+  if (window.location.pathname === '/superadmin') {
+    return <SuperAdmin />;
+  }
 
   if (showLanding && !user) {
     return <LandingPage

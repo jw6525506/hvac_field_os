@@ -732,6 +732,59 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
 });
 
 
+
+// ─── SUPER ADMIN ─────────────────────────────────────────
+
+const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || 'helix8-octave-labs-2026';
+
+app.post('/api/super-admin/login', async (req, res) => {
+  const { password } = req.body;
+  if (password !== SUPER_ADMIN_PASSWORD) return res.status(401).json({ message: 'Invalid password' });
+  const token = jwt.sign({ superAdmin: true }, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '8h' });
+  res.json({ token });
+});
+
+const requireSuperAdmin = (req, res, next) => {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET || 'your-secret-key');
+    if (!decoded.superAdmin) return res.status(403).json({ message: 'Forbidden' });
+    next();
+  } catch {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+app.get('/api/super-admin/stats', requireSuperAdmin, async (req, res) => {
+  try {
+    const companies = await pool.query(`
+      SELECT c.*, 
+        (SELECT COUNT(*) FROM "Users" u WHERE u."companyId" = c.id) as "userCount",
+        (SELECT COUNT(*) FROM "Customers" cu WHERE cu."companyId" = c.id) as "customerCount",
+        (SELECT COUNT(*) FROM "WorkOrders" wo WHERE wo."companyId" = c.id) as "workOrderCount",
+        (SELECT COUNT(*) FROM "Invoices" inv WHERE inv."companyId" = c.id) as "invoiceCount",
+        (SELECT COALESCE(SUM(total), 0) FROM "Invoices" inv WHERE inv."companyId" = c.id AND inv.status = 'paid') as "totalRevenue"
+      FROM "Companies" c
+      ORDER BY c."createdAt" DESC
+    `);
+
+    const totalCompanies = companies.rows.length;
+    const totalUsers = companies.rows.reduce((sum, c) => sum + parseInt(c.userCount), 0);
+    const totalRevenue = companies.rows.reduce((sum, c) => sum + parseFloat(c.totalRevenue), 0);
+    const activeToday = companies.rows.filter(c => {
+      const d = new Date(c.updatedAt);
+      const now = new Date();
+      return (now - d) < 24 * 60 * 60 * 1000;
+    }).length;
+
+    res.json({ companies: companies.rows, stats: { totalCompanies, totalUsers, totalRevenue, activeToday } });
+  } catch (err) {
+    console.error('Super admin stats error:', err.message);
+    res.status(500).json({ message: 'Failed to load stats' });
+  }
+});
+
 // ─── INVENTORY ───────────────────────────────────────────
 
 app.get('/api/inventory', requireAuth, async (req, res) => {
