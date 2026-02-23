@@ -10,6 +10,11 @@ function Signup({ onSignupSuccess }) {
     companyName: '',
     companyEmail: '',
     companyPhone: '',
+    industry: '',
+    employeeCount: '',
+    city: '',
+    state: '',
+    referralSource: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -26,6 +31,13 @@ function Signup({ onSignupSuccess }) {
     setStep(2);
   };
 
+  const handleStep2 = (e) => {
+    e.preventDefault();
+    if (!form.industry) { setError('Please select your industry'); return; }
+    setError('');
+    setStep(3);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password !== form.confirmPassword) { setError('Passwords do not match'); return; }
@@ -40,6 +52,11 @@ function Signup({ onSignupSuccess }) {
           companyName: form.companyName,
           companyEmail: form.companyEmail,
           companyPhone: form.companyPhone,
+          industry: form.industry,
+          employeeCount: form.employeeCount,
+          city: form.city,
+          state: form.state,
+          referralSource: form.referralSource,
           firstName: form.firstName,
           lastName: form.lastName,
           email: form.email,
@@ -127,8 +144,81 @@ function Signup({ onSignupSuccess }) {
             </form>
           )}
 
-          {/* Step 2 - Admin Account */}
-          {step === 2 && (
+
+        {/* Step 2 - Business Details */}
+        {step === 2 && (
+          <form onSubmit={handleStep2}>
+            <h2 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '700', color: 'white' }}>Tell us about your business</h2>
+            <p style={{ color: '#94a3b8', margin: '0 0 24px', fontSize: '14px' }}>Help us customize Helix8 for you</p>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={labelStyle}>Industry *</label>
+              <select style={inputStyle} value={form.industry} onChange={e => update('industry', e.target.value)} required>
+                <option value="">Select your industry</option>
+                <option value="HVAC">HVAC</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Roofing">Roofing</option>
+                <option value="Landscaping">Landscaping</option>
+                <option value="Painting">Painting</option>
+                <option value="Cleaning">Cleaning</option>
+                <option value="Pest Control">Pest Control</option>
+                <option value="General Contractor">General Contractor</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={labelStyle}>Number of Employees</label>
+              <select style={inputStyle} value={form.employeeCount} onChange={e => update('employeeCount', e.target.value)}>
+                <option value="">Select range</option>
+                <option value="1">Just me</option>
+                <option value="2-5">2-5 employees</option>
+                <option value="6-10">6-10 employees</option>
+                <option value="11-25">11-25 employees</option>
+                <option value="26-50">26-50 employees</option>
+                <option value="50+">50+ employees</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div>
+                <label style={labelStyle}>City</label>
+                <input style={inputStyle} value={form.city} onChange={e => update('city', e.target.value)} placeholder="Atlanta" />
+              </div>
+              <div>
+                <label style={labelStyle}>State</label>
+                <input style={inputStyle} value={form.state} onChange={e => update('state', e.target.value)} placeholder="GA" maxLength={2} />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={labelStyle}>How did you hear about us?</label>
+              <select style={inputStyle} value={form.referralSource} onChange={e => update('referralSource', e.target.value)}>
+                <option value="">Select one</option>
+                <option value="Cold Call">Cold Call</option>
+                <option value="Referral">Referral from someone</option>
+                <option value="Google">Google Search</option>
+                <option value="Social Media">Social Media</option>
+                <option value="Facebook Group">Facebook Group</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {error && <p style={{ color: '#f87171', fontSize: '14px', margin: '0 0 16px' }}>{error}</p>}
+
+            <button type="submit" style={{ width: '100%', padding: '14px', backgroundColor: '#06b6d4', color: '#0a0f2c', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '700', cursor: 'pointer' }}>
+              Continue →
+            </button>
+            <button type="button" onClick={() => setStep(1)} style={{ width: '100%', padding: '12px', backgroundColor: 'transparent', color: '#94a3b8', border: 'none', fontSize: '14px', cursor: 'pointer', marginTop: '8px' }}>
+              ← Back
+            </button>
+          </form>
+        )}
+
+        {/* Step 3 - Admin Account */}
+        {step === 3 && (
+
             <form onSubmit={handleSubmit}>
               <h2 style={{ margin: '0 0 24px', fontSize: '18px', fontWeight: '700', color: 'white' }}>Create Your Account</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
