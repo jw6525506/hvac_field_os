@@ -796,6 +796,69 @@ app.patch('/api/inventory/:id/adjust', requireAuth, async (req, res) => {
   }
 });
 
+
+// ─── INVOICE PAYMENT ─────────────────────────────────────
+
+app.post('/api/invoices/:id/payment-link', requireAuth, async (req, res) => {
+  try {
+    const invoice = await pool.query(
+      `SELECT inv.*, c."firstName", c."lastName", c.email FROM "Invoices" inv
+       LEFT JOIN "Customers" c ON inv."customerId" = c.id
+       WHERE inv.id = $1 AND inv."companyId" = $2`,
+      [req.params.id, req.user.companyId]
+    );
+    if (invoice.rows.length === 0) return res.status(404).json({ message: 'Invoice not found' });
+    const inv = invoice.rows[0];
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Invoice #${inv.id} - ${inv.firstName} ${inv.lastName}`,
+            description: inv.description || 'Service Invoice',
+          },
+          unit_amount: Math.round(parseFloat(inv.total) * 100),
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/payment-success?invoice=${inv.id}`,
+      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/payment-cancelled`,
+      customer_email: inv.email || undefined,
+      metadata: { invoiceId: String(inv.id), companyId: String(req.user.companyId) },
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('Payment link error:', err.message);
+    res.status(500).json({ message: 'Failed to create payment link' });
+  }
+});
+
+app.post('/api/webhooks/payment', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET || '');
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const invoiceId = session.metadata?.invoiceId;
+    if (invoiceId) {
+      await pool.query(
+        `UPDATE "Invoices" SET status = 'paid', "updatedAt" = NOW() WHERE id = $1`,
+        [invoiceId]
+      );
+    }
+  }
+  res.json({ received: true });
+});
+
 // ─── CSV IMPORT ──────────────────────────────────────────
 
 app.post('/api/customers/import', requireAuth, async (req, res) => {

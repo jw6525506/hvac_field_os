@@ -181,6 +181,21 @@ export default function Invoices() {
     }
   };
 
+  const handlePaymentLink = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3000/api/invoices/${id}/payment-link`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.message || 'Failed to create payment link'); return; }
+      window.open(data.url, '_blank');
+    } catch (err) {
+      alert('Failed to create payment link');
+    }
+  };
+
   const handleDelete = async () => {
     const id = deleteTarget.id;
     setDeleteTarget(null);
@@ -315,6 +330,10 @@ export default function Invoices() {
                     <button style={S.markUnpaidBtn} onClick={() => handleStatusChange(inv.id, 'unpaid')}>↩ Mark Unpaid</button>
                   )}
                   <button style={S.emailBtn} onClick={() => handleEmailInvoice(inv.id)}>📧 Email</button>
+                  <button onClick={() => handlePaymentLink(inv.id)}
+                    style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '600', backgroundColor: '#f0fdf4', color: '#15803d' }}>
+                    💳 Pay Now
+                  </button>
                   <button style={S.deleteBtn} onClick={() => setDeleteTarget(inv)}>Delete</button>
                 </div>
               </div>
