@@ -28,7 +28,7 @@ function Customers() {
   const loadCustomers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/customers', {
+      const response = await fetch('https://hvacfieldos-production.up.railway.app/api/customers', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -65,7 +65,7 @@ function Customers() {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/customers', {
+      const response = await fetch('https://hvacfieldos-production.up.railway.app/api/customers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ function Customers() {
         });
       }
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/customers/import', {
+      const res = await fetch('https://hvacfieldos-production.up.railway.app/api/customers/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ customers }),

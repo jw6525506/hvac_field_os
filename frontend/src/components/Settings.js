@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://hvacfieldos-production.up.railway.app/api';
 
 function Settings() {
   const [branding, setBranding] = useState({ name: '', logo: '', brandColor: '#06b6d4', companyTagline: '' });
@@ -96,7 +96,7 @@ function Settings() {
         <label style={{ cursor: 'pointer' }}>
           <div style={S.logoBox}>
             {branding.logo ? (
-              <img src={`http://localhost:3000${branding.logo}`} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src={`https://hvacfieldos-production.up.railway.app${branding.logo}`} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             ) : (
               <div style={{ textAlign: 'center', color: '#94a3b8' }}>
                 <div style={{ fontSize: '32px' }}>🏢</div>

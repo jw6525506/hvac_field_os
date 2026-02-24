@@ -16,7 +16,7 @@ import Settings from './components/Settings';
 import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://hvacfieldos-production.up.railway.app/api';
 
 if (!document.getElementById('mobile-styles')) {
   const s = document.createElement('style');
@@ -61,7 +61,7 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token || !user) return;
-    fetch('http://localhost:3000/api/company/branding', { headers: { Authorization: 'Bearer ' + token } })
+    fetch('https://hvacfieldos-production.up.railway.app/api/company/branding', { headers: { Authorization: 'Bearer ' + token } })
       .then(r => r.json())
       .then(data => {
         if (data.branding) {
@@ -193,7 +193,7 @@ function App() {
     setTwoFALoading(true);
     setTwoFAError('');
     try {
-      const res = await fetch('http://localhost:3000/api/auth/2fa/verify', {
+      const res = await fetch('https://hvacfieldos-production.up.railway.app/api/auth/2fa/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: twoFAEmail, code: twoFACode })
@@ -226,7 +226,7 @@ function App() {
       if (!response.ok) { setError(data.message || 'Invalid email or password'); return; }
       setShowLanding(false);
       setTwoFAEmail(email);
-      await fetch('http://localhost:3000/api/auth/2fa/send', {
+      await fetch('https://hvacfieldos-production.up.railway.app/api/auth/2fa/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -495,7 +495,7 @@ function App() {
         <div style={{ padding: '8px 12px', marginBottom: '8px' }}>
           <div style={{ fontSize: '24px', marginBottom: '4px' }}>❄️</div>
           {branding.logo ? (
-            <img src={`http://localhost:3000${branding.logo}`} alt="Logo" style={{ height: '36px', maxWidth: '140px', objectFit: 'contain' }} />
+            <img src={`https://hvacfieldos-production.up.railway.app${branding.logo}`} alt="Logo" style={{ height: '36px', maxWidth: '140px', objectFit: 'contain' }} />
           ) : (
             <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'white' }}>Helix<span style={{ color: branding.brandColor || '#06b6d4' }}>8</span></h2>
           )}

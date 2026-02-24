@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useCallback } from 'react';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://hvacfieldos-production.up.railway.app/api';
 
 const S = {
   page: { padding: '32px', fontFamily: "'DM Sans', 'Segoe UI', sans-serif", backgroundColor: '#f0f4f8', minHeight: '100vh' },
@@ -184,7 +184,7 @@ export default function Invoices() {
   const handlePaymentLink = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/invoices/${id}/payment-link`, {
+      const res = await fetch(`https://hvacfieldos-production.up.railway.app/api/invoices/${id}/payment-link`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

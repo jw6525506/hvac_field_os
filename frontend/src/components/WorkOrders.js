@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useCallback } from 'react';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://hvacfieldos-production.up.railway.app/api';
 
 const S = {
   page: { padding: '32px', fontFamily: "'DM Sans', 'Segoe UI', sans-serif", backgroundColor: '#f0f4f8', minHeight: '100vh' },
@@ -107,7 +107,7 @@ export default function WorkOrders() {
   const loadUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/users', {
+      const res = await fetch('https://hvacfieldos-production.up.railway.app/api/users', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -405,7 +405,7 @@ export default function WorkOrders() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                 {photoTarget.photos.map((photo, idx) => (
                   <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', backgroundColor: '#f1f5f9' }}>
-                    <img src={`http://localhost:3000${photo.url}`} alt={photo.originalName}
+                    <img src={`https://hvacfieldos-production.up.railway.app${photo.url}`} alt={photo.originalName}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     <button onClick={() => handlePhotoDelete(photoTarget.id, photo.filename)}
                       style={{ position: 'absolute', top: '6px', right: '6px', width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

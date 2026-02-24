@@ -14,7 +14,7 @@ function LandingPage({ onLogin, onSignup }) {
     setContactLoading(true);
     setContactError('');
     try {
-      const res = await fetch('http://localhost:3000/api/contact', {
+      const res = await fetch('https://hvacfieldos-production.up.railway.app/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(contactForm)
