@@ -9,9 +9,10 @@ RUN npm install leaflet react-leaflet --legacy-peer-deps
 
 COPY . .
 
+RUN npm run build
+
+RUN npm install -g serve
+
 EXPOSE 3000
 
-ENV REACT_APP_API_URL=http://localhost:3000/api
-
-CMD ["npm", "start"]
-
+CMD ["serve", "-s", "build", "-l", "3000"]
