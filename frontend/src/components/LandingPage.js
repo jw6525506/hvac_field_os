@@ -1,6 +1,39 @@
 import React, { useState, useEffect } from 'react';
 
 function LandingPage({ onLogin, onSignup }) {
+  const [contactForm, setContactForm] = React.useState({ name: '', email: '', company: '', phone: '', message: '' });
+  const [contactSent, setContactSent] = React.useState(false);
+  const [contactLoading, setContactLoading] = React.useState(false);
+  const [contactError, setContactError] = React.useState('');
+
+  const handleContactSubmit = async () => {
+    if (!contactForm.name || !contactForm.email || !contactForm.message) {
+      setContactError('Please fill in name, email and message');
+      return;
+    }
+    setContactLoading(true);
+    setContactError('');
+    try {
+      const res = await fetch('http://localhost:3000/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contactForm)
+      });
+      const data = await res.json();
+      if (!res.ok) { setContactError(data.message); return; }
+      setContactSent(true);
+    } catch (err) {
+      setContactError('Failed to send message. Please try again.');
+    } finally {
+      setContactLoading(false);
+    }
+  };
+
+  const inputStyle = {
+    width: '100%', padding: '12px 14px', backgroundColor: '#0a0f2c',
+    border: '2px solid rgba(255,255,255,0.08)', borderRadius: '8px',
+    color: 'white', fontSize: '14px', boxSizing: 'border-box', outline: 'none'
+  };
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -190,6 +223,60 @@ function LandingPage({ onLogin, onSignup }) {
         <button className="btn-hero btn-hero-primary" onClick={onSignup}>Start Your Free Trial Today</button>
       </div>
 
+
+      <div style={{ padding: '80px 24px', backgroundColor: '#0a0f2c' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <h2 style={{ fontSize: '36px', fontWeight: '800', color: 'white', margin: '0 0 16px' }}>Get in Touch</h2>
+            <p style={{ color: '#94a3b8', fontSize: '18px', margin: 0 }}>Have questions? Send us a message and we will get back to you within 24 hours.</p>
+          </div>
+          {contactSent ? (
+            <div style={{ textAlign: 'center', padding: '48px', backgroundColor: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: '16px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
+              <h3 style={{ color: 'white', fontSize: '24px', fontWeight: '700', margin: '0 0 8px' }}>Message Sent</h3>
+              <p style={{ color: '#94a3b8', margin: 0 }}>We will get back to you within 24 hours.</p>
+            </div>
+          ) : (
+            <div style={{ backgroundColor: '#0d1426', borderRadius: '16px', padding: '40px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>NAME *</label>
+                  <input value={contactForm.name} onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="John Smith" style={{ width: '100%', padding: '12px 14px', backgroundColor: '#0a0f2c', border: '2px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>EMAIL *</label>
+                  <input type="email" value={contactForm.email} onChange={e => setContactForm(f => ({ ...f, email: e.target.value }))}
+                    placeholder="john@company.com" style={{ width: '100%', padding: '12px 14px', backgroundColor: '#0a0f2c', border: '2px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>COMPANY</label>
+                  <input value={contactForm.company} onChange={e => setContactForm(f => ({ ...f, company: e.target.value }))}
+                    placeholder="ACME HVAC" style={{ width: '100%', padding: '12px 14px', backgroundColor: '#0a0f2c', border: '2px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>PHONE</label>
+                  <input value={contactForm.phone} onChange={e => setContactForm(f => ({ ...f, phone: e.target.value }))}
+                    placeholder="(404) 555-0100" style={{ width: '100%', padding: '12px 14px', backgroundColor: '#0a0f2c', border: '2px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#94a3b8', marginBottom: '6px' }}>MESSAGE *</label>
+                <textarea value={contactForm.message} onChange={e => setContactForm(f => ({ ...f, message: e.target.value }))}
+                  placeholder="Tell us about your business and what you are looking for..."
+                  rows={5} style={{ width: '100%', padding: '12px 14px', backgroundColor: '#0a0f2c', border: '2px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'white', fontSize: '14px', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
+              </div>
+              {contactError && <p style={{ color: '#f87171', fontSize: '14px', marginBottom: '16px' }}>{contactError}</p>}
+              <button onClick={handleContactSubmit} disabled={contactLoading}
+                style={{ width: '100%', padding: '14px', backgroundColor: '#06b6d4', color: '#0a0f2c', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '700', cursor: 'pointer' }}>
+                {contactLoading ? 'Sending...' : 'Send Message'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
       <footer className="footer">
         <div className="footer-logo">Helix<span>8</span></div>
         <div className="footer-copy">© 2026 Helix8 by Octave Labs. Built for trades professionals.</div>
