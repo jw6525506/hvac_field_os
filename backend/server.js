@@ -558,11 +558,11 @@ app.get('/api/work-orders', requireAuth, async (req, res) => {
 });
 
 app.post('/api/work-orders', requireAuth, async (req, res) => {
-  const { customerId, jobType, description, priority, scheduledDate, scheduledTime, assignedTo } = req.body;
+  const { customerId, jobType, description, priority, scheduledDate, scheduledTime, assignedTo, title } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO "WorkOrders" ("customerId", "jobType", description, priority, "scheduledDate", "scheduledTime", status, "companyId", "assignedTo") VALUES ($1, $2, $3, $4, $5, $6, 'scheduled', $7, $8) RETURNING *`,
-      [customerId, jobType, description, priority || 'normal', scheduledDate || null, scheduledTime || null, req.user.companyId, assignedTo || null]
+      `INSERT INTO "WorkOrders" (title, "customerId", "jobType", description, priority, "scheduledDate", "scheduledTime", status, "companyId", "assignedTo") VALUES ($1, $2, $3, $4, $5, $6, $7, 'scheduled', $8, $9) RETURNING *`,
+      [title || jobType || 'Work Order', customerId, jobType, description, priority || 'normal', scheduledDate || null, scheduledTime || null, req.user.companyId, assignedTo || null]
     );
     res.json({ message: 'Work order created', workOrder: result.rows[0] });
   } catch (err) {
