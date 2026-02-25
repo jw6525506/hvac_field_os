@@ -710,6 +710,12 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
       <div style="display:flex;justify-content:space-between;margin-bottom:12px;"><span style="color:#64748b;font-size:14px;">Tax (${parseFloat(inv.taxRate||0)}%)</span><span style="color:#1a2332;font-size:14px;">$${parseFloat(inv.taxAmount||0).toFixed(2)}</span></div>
       <div style="display:flex;justify-content:space-between;padding:12px 16px;background:#0f172a;border-radius:8px;"><span style="color:white;font-size:16px;font-weight:700;">Total Due</span><span style="color:white;font-size:20px;font-weight:800;">$${parseFloat(inv.total||0).toFixed(2)}</span></div>
     </div>
+    ${inv.status !== 'paid' ? `<div style="text-align:center;margin-bottom:24px;">
+      <a href="${process.env.FRONTEND_URL || 'https://cheerful-love-production.up.railway.app'}/pay/${inv.id}" 
+         style="display:inline-block;padding:16px 48px;background:#06b6d4;color:#0a0f2c;font-size:18px;font-weight:800;text-decoration:none;border-radius:8px;">
+        💳 Pay Now
+      </a>
+    </div>` : ''}
     <div style="padding:16px;background:#f8fafc;border-radius:8px;text-align:center;">
       <p style="margin:0 0 4px;color:#475569;font-size:14px;">Questions? Contact us:</p>
       <p style="margin:0;color:#2563eb;font-size:14px;font-weight:600;">${inv.companyEmail||''} ${inv.companyPhone ? '| '+inv.companyPhone : ''}</p>
