@@ -13,6 +13,7 @@ import MapView from './components/MapView';
 import LandingPage from './components/LandingPage';
 import SuperAdmin from './components/SuperAdmin';
 import Settings from './components/Settings';
+import PaymentPage from './components/PaymentPage';
 import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 
@@ -380,6 +381,9 @@ function App() {
       </div>
     </div>
   );
+
+  const payMatch = window.location.pathname.match(/^\/pay\/(\d+)$/);
+  if (payMatch) return <PaymentPage invoiceId={payMatch[1]} />;
 
   if (window.location.pathname === '/superadmin') {
     return <SuperAdmin />;

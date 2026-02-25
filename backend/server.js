@@ -782,6 +782,38 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
+
+// ─── PUBLIC INVOICE ROUTES ───────────────────────────────
+
+app.get('/api/invoices/:id/public', async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT inv.*, c."firstName", c."lastName", comp.name as "companyName", comp.email as "companyEmail", comp.phone as "companyPhone" FROM "Invoices" inv LEFT JOIN "Customers" c ON inv."customerId" = c.id LEFT JOIN "Companies" comp ON inv."companyId" = comp.id WHERE inv.id = $1`, [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Invoice not found' });
+    res.json({ invoice: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load invoice' });
+  }
+});
+
+app.post('/api/invoices/:id/payment-link-public', async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT inv.*, comp.name as "companyName" FROM "Invoices" inv LEFT JOIN "Companies" comp ON inv."companyId" = comp.id WHERE inv.id = $1`, [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Invoice not found' });
+    const inv = result.rows[0];
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{ price_data: { currency: 'usd', product_data: { name: `Invoice ${inv.invoiceNumber}` }, unit_amount: Math.round(parseFloat(inv.total) * 100) }, quantity: 1 }],
+      mode: 'payment',
+      success_url: `${process.env.FRONTEND_URL}/payment-success?invoice=${inv.id}`,
+      cancel_url: `${process.env.FRONTEND_URL}/pay/${inv.id}`,
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('Public payment error:', err.message);
+    res.status(500).json({ message: 'Failed to create payment link' });
+  }
+});
+
 // ─── TWO FACTOR AUTH ─────────────────────────────────────
 
 app.post('/api/auth/2fa/send', async (req, res) => {
