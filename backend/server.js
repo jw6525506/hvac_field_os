@@ -566,7 +566,8 @@ app.post('/api/work-orders', requireAuth, async (req, res) => {
     );
     res.json({ message: 'Work order created', workOrder: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to create work order' });
+    console.error('Work order error:', err.message);
+    res.status(500).json({ message: 'Failed to create work order', error: err.message });
   }
 });
 
