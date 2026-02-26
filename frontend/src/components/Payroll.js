@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const API_BASE = 'https://hvacfieldos-production.up.railway.app/api';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
 function Payroll({ token, user }) {
   const [clockStatus, setClockStatus] = useState({ clockedIn: false, entry: null });
