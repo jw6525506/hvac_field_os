@@ -831,6 +831,119 @@ app.post('/api/contact', async (req, res) => {
 });
 
 
+
+// ─── PAYROLL / TIME CLOCK ────────────────────────────────
+
+// Clock in
+app.post('/api/timeclock/clockin', requireAuth, async (req, res) => {
+  try {
+    const { workOrderId } = req.body;
+    const active = await pool.query('SELECT id FROM "TimeEntries" WHERE "userId"=$1 AND "clockOut" IS NULL', [req.user.id]);
+    if (active.rows.length > 0) return res.status(400).json({ message: 'Already clocked in' });
+    const result = await pool.query(
+      'INSERT INTO "TimeEntries" ("userId", "workOrderId", "companyId", "clockIn") VALUES ($1,$2,$3,NOW()) RETURNING *',
+      [req.user.id, workOrderId || null, req.user.companyId]
+    );
+    res.json({ message: 'Clocked in', entry: result.rows[0] });
+  } catch (err) { res.status(500).json({ message: 'Failed to clock in' }); }
+});
+
+// Clock out
+app.post('/api/timeclock/clockout', requireAuth, async (req, res) => {
+  try {
+    const active = await pool.query('SELECT * FROM "TimeEntries" WHERE "userId"=$1 AND "clockOut" IS NULL', [req.user.id]);
+    if (active.rows.length === 0) return res.status(400).json({ message: 'Not clocked in' });
+    const entry = active.rows[0];
+    const minutes = Math.round((Date.now() - new Date(entry.clockIn).getTime()) / 60000);
+    const result = await pool.query(
+      'UPDATE "TimeEntries" SET "clockOut"=NOW(), "totalMinutes"=$1, "updatedAt"=NOW() WHERE id=$2 RETURNING *',
+      [minutes, entry.id]
+    );
+    res.json({ message: 'Clocked out', entry: result.rows[0] });
+  } catch (err) { res.status(500).json({ message: 'Failed to clock out' }); }
+});
+
+// Get current clock status
+app.get('/api/timeclock/status', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT te.*, wo."jobType" FROM "TimeEntries" te LEFT JOIN "WorkOrders" wo ON te."workOrderId"=wo.id WHERE te."userId"=$1 AND te."clockOut" IS NULL', [req.user.id]);
+    res.json({ clockedIn: result.rows.length > 0, entry: result.rows[0] || null });
+  } catch (err) { res.status(500).json({ message: 'Failed to get status' }); }
+});
+
+// Get time entries for company
+app.get('/api/timeclock/entries', requireAuth, async (req, res) => {
+  try {
+    const { startDate, endDate, userId } = req.query;
+    let query = `SELECT te.*, u."firstName", u."lastName", u."hourlyRate", u."commissionRate", wo."jobType" 
+      FROM "TimeEntries" te 
+      LEFT JOIN "Users" u ON te."userId"=u.id 
+      LEFT JOIN "WorkOrders" wo ON te."workOrderId"=wo.id 
+      WHERE te."companyId"=$1`;
+    const params = [req.user.companyId];
+    if (userId) { params.push(userId); query += ` AND te."userId"=$${params.length}`; }
+    if (startDate) { params.push(startDate); query += ` AND te."clockIn">=$${params.length}`; }
+    if (endDate) { params.push(endDate); query += ` AND te."clockIn"<=$${params.length}`; }
+    query += ' ORDER BY te."clockIn" DESC';
+    const result = await pool.query(query, params);
+    res.json({ entries: result.rows });
+  } catch (err) { res.status(500).json({ message: 'Failed to load entries' }); }
+});
+
+// Get payroll summary
+app.get('/api/payroll/summary', requireAuth, async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const result = await pool.query(`
+      SELECT u.id, u."firstName", u."lastName", u."hourlyRate", u."commissionRate",
+        COALESCE(SUM(te."totalMinutes"),0) as "totalMinutes",
+        COALESCE(SUM(te."totalMinutes")/60.0 * u."hourlyRate", 0) as "hourlyPay",
+        COUNT(DISTINCT te.id) as "totalShifts"
+      FROM "Users" u
+      LEFT JOIN "TimeEntries" te ON u.id=te."userId" AND te."clockOut" IS NOT NULL
+        ${startDate ? `AND te."clockIn">='${startDate}'` : ''}
+        ${endDate ? `AND te."clockIn"<='${endDate}'` : ''}
+      WHERE u."companyId"=$1 AND u.role='technician'
+      GROUP BY u.id, u."firstName", u."lastName", u."hourlyRate", u."commissionRate"
+    `, [req.user.companyId]);
+
+    // Get commission from paid invoices
+    const invoiceResult = await pool.query(`
+      SELECT inv."assignedTo", COALESCE(SUM(inv.total),0) as "totalInvoiced"
+      FROM "Invoices" inv
+      WHERE inv."companyId"=$1 AND inv.status='paid'
+        ${startDate ? `AND inv."createdAt">='${startDate}'` : ''}
+        ${endDate ? `AND inv."createdAt"<='${endDate}'` : ''}
+      GROUP BY inv."assignedTo"
+    `, [req.user.companyId]);
+
+    const invoiceMap = {};
+    invoiceResult.rows.forEach(r => { invoiceMap[r.assignedTo] = parseFloat(r.totalInvoiced); });
+
+    const summary = result.rows.map(u => {
+      const commissionBase = invoiceMap[u.id] || 0;
+      const commissionPay = commissionBase * (parseFloat(u.commissionRate) / 100);
+      const totalPay = parseFloat(u.hourlyPay) + commissionPay;
+      return { ...u, commissionBase, commissionPay, totalPay };
+    });
+
+    res.json({ summary });
+  } catch (err) {
+    console.error('Payroll summary error:', err.message);
+    res.status(500).json({ message: 'Failed to load payroll' });
+  }
+});
+
+// Update technician pay rates
+app.put('/api/users/:id/pay-rates', requireAuth, async (req, res) => {
+  try {
+    const { hourlyRate, commissionRate } = req.body;
+    await pool.query('UPDATE "Users" SET "hourlyRate"=$1, "commissionRate"=$2, "updatedAt"=NOW() WHERE id=$3 AND "companyId"=$4',
+      [hourlyRate, commissionRate, req.params.id, req.user.companyId]);
+    res.json({ message: 'Pay rates updated' });
+  } catch (err) { res.status(500).json({ message: 'Failed to update pay rates' }); }
+});
+
 // ─── PUBLIC INVOICE ROUTES ───────────────────────────────
 
 app.get('/api/invoices/:id/public', async (req, res) => {

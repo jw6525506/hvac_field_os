@@ -14,6 +14,7 @@ import LandingPage from './components/LandingPage';
 import SuperAdmin from './components/SuperAdmin';
 import Settings from './components/Settings';
 import PaymentPage from './components/PaymentPage';
+import Payroll from './components/Payroll';
 import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 
