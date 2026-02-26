@@ -482,6 +482,7 @@ function App() {
     { page: 'billing', icon: '💳', label: t('billing') },
     { page: 'map', icon: '🗺️', label: t('jobMap') },
     { page: 'inventory', icon: '📦', label: t('inventory') },
+    { page: 'payroll', icon: '💰', label: 'Payroll' },
     { page: 'settings', icon: '⚙️', label: 'Settings' },
     { page: 'users', icon: '👤', label: 'Team' },
   ];
@@ -726,6 +727,7 @@ function App() {
         {currentPage === 'billing' && user.role !== 'technician' && <Billing currentUser={user} />}
         {currentPage === 'map' && <MapView />}
         {currentPage === 'inventory' && <Inventory />}
+        {currentPage === 'payroll' && <Payroll token={localStorage.getItem('token')} user={user} />}
         {currentPage === 'settings' && <Settings />}
         {currentPage === 'users' && user.role === 'admin' && <Users />}
       </div>
