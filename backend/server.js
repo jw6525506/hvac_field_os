@@ -916,10 +916,11 @@ app.get('/api/payroll/summary', requireAuth, async (req, res) => {
     if (endDate) { params2.push(endDate); dateFilter2 += ` AND inv."createdAt"<=$${params2.length}`; }
 
     const invoiceResult = await pool.query(`
-      SELECT inv."assignedTo", COALESCE(SUM(inv.total),0) as "totalInvoiced"
+      SELECT wo."assignedTo", COALESCE(SUM(inv.total),0) as "totalInvoiced"
       FROM "Invoices" inv
+      JOIN "WorkOrders" wo ON inv."workOrderId"=wo.id
       WHERE inv."companyId"=$1 AND inv.status='paid' ${dateFilter2}
-      GROUP BY inv."assignedTo"
+      GROUP BY wo."assignedTo"
     `, params2);
 
     const invoiceMap = {};
