@@ -38,7 +38,7 @@ services:
       dockerfile: Dockerfile
     container_name: hvac_frontend
     ports:
-      - "3001:3000"
+      - "3001:8080"
     depends_on:
       - backend
 
