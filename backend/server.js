@@ -999,7 +999,7 @@ app.post('/api/auth/2fa/send', async (req, res) => {
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: 'Helix8 <onboarding@resend.dev>',
-      to: 'jw6525506@gmail.com',
+      to: user.email,
       subject: 'Your Helix8 Login Code',
       html: `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
