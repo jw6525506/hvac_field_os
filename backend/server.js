@@ -894,28 +894,33 @@ app.get('/api/timeclock/entries', requireAuth, async (req, res) => {
 app.get('/api/payroll/summary', requireAuth, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
+    const params = [req.user.companyId];
+    let dateFilter = '';
+    if (startDate) { params.push(startDate); dateFilter += ` AND te."clockIn">=$${params.length}`; }
+    if (endDate) { params.push(endDate); dateFilter += ` AND te."clockIn"<=$${params.length}`; }
+
     const result = await pool.query(`
       SELECT u.id, u."firstName", u."lastName", u."hourlyRate", u."commissionRate",
         COALESCE(SUM(te."totalMinutes"),0) as "totalMinutes",
         COALESCE(SUM(te."totalMinutes")/60.0 * u."hourlyRate", 0) as "hourlyPay",
         COUNT(DISTINCT te.id) as "totalShifts"
       FROM "Users" u
-      LEFT JOIN "TimeEntries" te ON u.id=te."userId" AND te."clockOut" IS NOT NULL
-        ${startDate ? `AND te."clockIn">='${startDate}'` : ''}
-        ${endDate ? `AND te."clockIn"<='${endDate}'` : ''}
+      LEFT JOIN "TimeEntries" te ON u.id=te."userId" AND te."clockOut" IS NOT NULL ${dateFilter}
       WHERE u."companyId"=$1 AND u.role='technician'
       GROUP BY u.id, u."firstName", u."lastName", u."hourlyRate", u."commissionRate"
-    `, [req.user.companyId]);
+    `, params);
 
-    // Get commission from paid invoices
+    const params2 = [req.user.companyId];
+    let dateFilter2 = '';
+    if (startDate) { params2.push(startDate); dateFilter2 += ` AND inv."createdAt">=$${params2.length}`; }
+    if (endDate) { params2.push(endDate); dateFilter2 += ` AND inv."createdAt"<=$${params2.length}`; }
+
     const invoiceResult = await pool.query(`
       SELECT inv."assignedTo", COALESCE(SUM(inv.total),0) as "totalInvoiced"
       FROM "Invoices" inv
-      WHERE inv."companyId"=$1 AND inv.status='paid'
-        ${startDate ? `AND inv."createdAt">='${startDate}'` : ''}
-        ${endDate ? `AND inv."createdAt"<='${endDate}'` : ''}
+      WHERE inv."companyId"=$1 AND inv.status='paid' ${dateFilter2}
       GROUP BY inv."assignedTo"
-    `, [req.user.companyId]);
+    `, params2);
 
     const invoiceMap = {};
     invoiceResult.rows.forEach(r => { invoiceMap[r.assignedTo] = parseFloat(r.totalInvoiced); });
