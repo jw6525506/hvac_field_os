@@ -377,46 +377,83 @@ export default function WorkOrders() {
       )}
 
 
-      {/* Photo Modal */}
+      {/* Before/After Photo Modal */}
       {photoTarget && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
           onClick={e => e.target === e.currentTarget && setPhotoTarget(null)}>
-          <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#0d1b3e' }}>
-                📷 Photos — {photoTarget.jobType}
-              </h2>
-              <button onClick={() => setPhotoTarget(null)}
-                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#64748b' }}>✕</button>
+          <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '700px', maxHeight: '85vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'white' }}>📷 Before & After — {photoTarget.jobType}</h2>
+              <button onClick={() => setPhotoTarget(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
             </div>
-            <label style={{ display: 'block', padding: '20px', border: '2px dashed #e2e8f0', borderRadius: '12px', textAlign: 'center', cursor: 'pointer', marginBottom: '20px', backgroundColor: '#f8fafc' }}>
-              <input type="file" multiple accept="image/*" style={{ display: 'none' }}
-                onChange={e => handlePhotoUpload(photoTarget.id, e.target.files)} />
-              {uploading ? (
-                <p style={{ margin: 0, color: '#64748b' }}>Uploading...</p>
-              ) : (
-                <>
-                  <p style={{ margin: '0 0 4px', fontSize: '16px' }}>📁</p>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Click to upload photos (max 10MB each)</p>
-                </>
-              )}
-            </label>
-            {photoTarget.photos && photoTarget.photos.length > 0 ? (
+
+            {/* BEFORE */}
+            <div style={{ marginBottom: '28px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <span style={{ backgroundColor: '#ef4444', color: 'white', padding: '3px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Before</span>
+                <span style={{ color: '#94a3b8', fontSize: '13px' }}>Photos taken before work started</span>
+              </div>
+              <label style={{ display: 'block', padding: '14px', border: '2px dashed #ef4444', borderRadius: '10px', textAlign: 'center', cursor: 'pointer', marginBottom: '12px', backgroundColor: 'rgba(239,68,68,0.05)' }}>
+                <input type="file" multiple accept="image/*" style={{ display: 'none' }}
+                  onChange={async e => {
+                    const formData = new FormData();
+                    Array.from(e.target.files).forEach(f => formData.append('photos', f));
+                    const res = await fetch(`${API_BASE}/work-orders/${photoTarget.id}/before-photos`, { method: 'POST', headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }, body: formData });
+                    const data = await res.json();
+                    setPhotoTarget(prev => ({ ...prev, beforePhotos: data.beforePhotos }));
+                    setWorkOrders(prev => prev.map(wo => wo.id === photoTarget.id ? { ...wo, beforePhotos: data.beforePhotos } : wo));
+                  }} />
+                <span style={{ color: '#ef4444', fontSize: '13px', fontWeight: '600' }}>+ Add Before Photos</span>
+              </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                {photoTarget.photos.map((photo, idx) => (
-                  <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', backgroundColor: '#f1f5f9' }}>
-                    <img src={`https://hvacfieldos-production.up.railway.app${photo.url}`} alt={photo.originalName}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    <button onClick={() => handlePhotoDelete(photoTarget.id, photo.filename)}
-                      style={{ position: 'absolute', top: '6px', right: '6px', width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      ✕
-                    </button>
+                {(photoTarget.beforePhotos || []).map((photo, idx) => (
+                  <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', border: '2px solid #ef4444' }}>
+                    <img src={`https://hvacfieldos-production.up.railway.app${photo}`} alt="before" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button onClick={async () => {
+                      const res = await fetch(`${API_BASE}/work-orders/${photoTarget.id}/before-photos/${photo.split('/').pop()}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + localStorage.getItem('token') } });
+                      const data = await res.json();
+                      setPhotoTarget(prev => ({ ...prev, beforePhotos: data.beforePhotos }));
+                      setWorkOrders(prev => prev.map(wo => wo.id === photoTarget.id ? { ...wo, beforePhotos: data.beforePhotos } : wo));
+                    }} style={{ position: 'absolute', top: '4px', right: '4px', width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'rgba(239,68,68,0.9)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '12px' }}>✕</button>
                   </div>
                 ))}
+                {(!photoTarget.beforePhotos || photoTarget.beforePhotos.length === 0) && <p style={{ color: '#64748b', fontSize: '13px', gridColumn: 'span 3', margin: '8px 0' }}>No before photos yet</p>}
               </div>
-            ) : (
-              <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '14px', padding: '20px 0' }}>No photos yet — upload some above</p>
-            )}
+            </div>
+
+            {/* AFTER */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <span style={{ backgroundColor: '#22c55e', color: 'white', padding: '3px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>After</span>
+                <span style={{ color: '#94a3b8', fontSize: '13px' }}>Photos taken after work completed</span>
+              </div>
+              <label style={{ display: 'block', padding: '14px', border: '2px dashed #22c55e', borderRadius: '10px', textAlign: 'center', cursor: 'pointer', marginBottom: '12px', backgroundColor: 'rgba(34,197,94,0.05)' }}>
+                <input type="file" multiple accept="image/*" style={{ display: 'none' }}
+                  onChange={async e => {
+                    const formData = new FormData();
+                    Array.from(e.target.files).forEach(f => formData.append('photos', f));
+                    const res = await fetch(`${API_BASE}/work-orders/${photoTarget.id}/after-photos`, { method: 'POST', headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }, body: formData });
+                    const data = await res.json();
+                    setPhotoTarget(prev => ({ ...prev, afterPhotos: data.afterPhotos }));
+                    setWorkOrders(prev => prev.map(wo => wo.id === photoTarget.id ? { ...wo, afterPhotos: data.afterPhotos } : wo));
+                  }} />
+                <span style={{ color: '#22c55e', fontSize: '13px', fontWeight: '600' }}>+ Add After Photos</span>
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                {(photoTarget.afterPhotos || []).map((photo, idx) => (
+                  <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', border: '2px solid #22c55e' }}>
+                    <img src={`https://hvacfieldos-production.up.railway.app${photo}`} alt="after" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button onClick={async () => {
+                      const res = await fetch(`${API_BASE}/work-orders/${photoTarget.id}/after-photos/${photo.split('/').pop()}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + localStorage.getItem('token') } });
+                      const data = await res.json();
+                      setPhotoTarget(prev => ({ ...prev, afterPhotos: data.afterPhotos }));
+                      setWorkOrders(prev => prev.map(wo => wo.id === photoTarget.id ? { ...wo, afterPhotos: data.afterPhotos } : wo));
+                    }} style={{ position: 'absolute', top: '4px', right: '4px', width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'rgba(34,197,94,0.9)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '12px' }}>✕</button>
+                  </div>
+                ))}
+                {(!photoTarget.afterPhotos || photoTarget.afterPhotos.length === 0) && <p style={{ color: '#64748b', fontSize: '13px', gridColumn: 'span 3', margin: '8px 0' }}>No after photos yet</p>}
+              </div>
+            </div>
           </div>
         </div>
       )}

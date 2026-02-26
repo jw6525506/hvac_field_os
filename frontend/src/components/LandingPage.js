@@ -277,6 +277,9 @@ function LandingPage({ onLogin, onSignup }) {
           )}
         </div>
       </div>
+      <div style={{ textAlign: 'center', padding: '40px 24px', backgroundColor: '#0a0f2c', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <p style={{ color: '#06b6d4', fontSize: '20px', fontWeight: '700', fontStyle: 'italic', margin: 0 }}>"Built for tradesmen, by tradesmen."</p>
+      </div>
       <footer className="footer">
         <div className="footer-logo">Helix<span>8</span></div>
         <div className="footer-copy">© 2026 Helix8 by Octave Labs. Built for trades professionals.</div>

@@ -609,6 +609,54 @@ app.delete('/api/work-orders/:id', requireAuth, async (req, res) => {
   }
 });
 
+
+// Before/After photo upload
+app.post('/api/work-orders/:id/before-photos', requireAuth, upload.array('photos', 10), async (req, res) => {
+  try {
+    const result = await pool.query('SELECT "beforePhotos" FROM "WorkOrders" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Not found' });
+    const existing = result.rows[0].beforePhotos || [];
+    const newPhotos = req.files.map(f => '/uploads/' + f.filename);
+    const all = [...existing, ...newPhotos];
+    await pool.query('UPDATE "WorkOrders" SET "beforePhotos"=$1, "updatedAt"=NOW() WHERE id=$2', [all, req.params.id]);
+    res.json({ beforePhotos: all });
+  } catch (err) {
+    res.status(500).json({ message: 'Upload failed' });
+  }
+});
+
+app.post('/api/work-orders/:id/after-photos', requireAuth, upload.array('photos', 10), async (req, res) => {
+  try {
+    const result = await pool.query('SELECT "afterPhotos" FROM "WorkOrders" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Not found' });
+    const existing = result.rows[0].afterPhotos || [];
+    const newPhotos = req.files.map(f => '/uploads/' + f.filename);
+    const all = [...existing, ...newPhotos];
+    await pool.query('UPDATE "WorkOrders" SET "afterPhotos"=$1, "updatedAt"=NOW() WHERE id=$2', [all, req.params.id]);
+    res.json({ afterPhotos: all });
+  } catch (err) {
+    res.status(500).json({ message: 'Upload failed' });
+  }
+});
+
+app.delete('/api/work-orders/:id/before-photos/:filename', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT "beforePhotos" FROM "WorkOrders" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    const photos = (result.rows[0].beforePhotos || []).filter(p => !p.includes(req.params.filename));
+    await pool.query('UPDATE "WorkOrders" SET "beforePhotos"=$1, "updatedAt"=NOW() WHERE id=$2', [photos, req.params.id]);
+    res.json({ beforePhotos: photos });
+  } catch (err) { res.status(500).json({ message: 'Delete failed' }); }
+});
+
+app.delete('/api/work-orders/:id/after-photos/:filename', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT "afterPhotos" FROM "WorkOrders" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    const photos = (result.rows[0].afterPhotos || []).filter(p => !p.includes(req.params.filename));
+    await pool.query('UPDATE "WorkOrders" SET "afterPhotos"=$1, "updatedAt"=NOW() WHERE id=$2', [photos, req.params.id]);
+    res.json({ afterPhotos: photos });
+  } catch (err) { res.status(500).json({ message: 'Delete failed' }); }
+});
+
 // ─── INVOICES ────────────────────────────────────────────
 
 app.get('/api/invoices', requireAuth, async (req, res) => {
