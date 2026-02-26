@@ -285,9 +285,9 @@ app.post('/api/auth/reset-password', async (req, res) => {
 app.get('/api/billing/plans', (req, res) => {
   res.json({
     plans: [
-      { id: 'basic', name: 'Basic', price: 79, priceId: process.env.BASIC_PRICE_ID, description: 'Perfect for small HVAC companies', features: ['Up to 3 users', 'Customers & Work Orders', 'Invoicing', 'Email support'] },
-      { id: 'pro', name: 'Pro', price: 149, priceId: process.env.PRO_PRICE_ID, description: 'For growing HVAC businesses', features: ['Unlimited users', 'All Basic features', 'Advanced dashboard', 'Priority support'], popular: true },
-      { id: 'enterprise', name: 'Enterprise', price: 299, priceId: process.env.ENTERPRISE_PRICE_ID, description: 'For large operations', features: ['Everything in Pro', 'Custom integrations', 'Dedicated support', 'SLA guarantee'] },
+      { id: 'basic', name: 'Basic', price: 79, priceId: process.env.BASIC_PRICE_ID, description: 'Everything you need to get started', features: ['Up to 3 users', 'Customers & Work Orders', 'Invoicing', 'Email support'] },
+      { id: 'pro', name: 'Pro', price: 149, priceId: process.env.PRO_PRICE_ID, description: 'Scale your operation with confidence', features: ['Unlimited users', 'All Basic features', 'Advanced dashboard', 'Priority support'], popular: true },
+      { id: 'enterprise', name: 'Enterprise', price: 299, priceId: process.env.ENTERPRISE_PRICE_ID, description: 'Built for high-volume teams', features: ['Everything in Pro', 'Custom integrations', 'Dedicated support', 'SLA guarantee'] },
     ],
   });
 });
