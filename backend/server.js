@@ -231,7 +231,7 @@ app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
       'INSERT INTO "PasswordResets" (email, token, "expiresAt") VALUES ($1, $2, $3)',
       [email, token, expiresAt]
     );
-    const resetUrl = `http://localhost:3001?reset=${token}`;
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}?reset=${token}`;
     await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: email,
@@ -308,8 +308,8 @@ app.post('/api/billing/checkout', requireAuth, requireAdmin, async (req, res) =>
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      success_url: `http://localhost:3001?billing=success`,
-      cancel_url: `http://localhost:3001?billing=cancelled`,
+      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3001'}?billing=success`,
+      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3001'}?billing=cancelled`,
     });
     res.json({ url: session.url });
   } catch (err) {
@@ -323,7 +323,7 @@ app.post('/api/billing/portal', requireAuth, requireAdmin, async (req, res) => {
     const companyResult = await pool.query('SELECT * FROM "Companies" WHERE id = $1', [req.user.companyId]);
     const company = companyResult.rows[0];
     if (!company.stripeCustomerId) return res.status(400).json({ message: 'No billing account found' });
-    const session = await stripe.billingPortal.sessions.create({ customer: company.stripeCustomerId, return_url: 'http://localhost:3001' });
+    const session = await stripe.billingPortal.sessions.create({ customer: company.stripeCustomerId, return_url: process.env.FRONTEND_URL || 'http://localhost:3001' });
     res.json({ url: session.url });
   } catch (err) {
     console.error('Portal error:', err.message);
