@@ -14,6 +14,11 @@ function SuperAdmin() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [filterIndustry, setFilterIndustry] = useState('all');
+  const [activeTab, setActiveTab] = useState('companies');
+  const [leads, setLeads] = useState(JSON.parse(localStorage.getItem('helix8_leads') || '[]'));
+  const [showAddLead, setShowAddLead] = useState(false);
+  const [newLead, setNewLead] = useState({ company: '', contact: '', phone: '', email: '', industry: '', status: 'not_contacted', notes: '', followUpDate: '' });
+  const [editingLead, setEditingLead] = useState(null);
 
   useEffect(() => {
     if (token) { setAuthed(true); loadStats(); }
@@ -76,6 +81,53 @@ function SuperAdmin() {
 
   const industries = [...new Set((companies || []).map(c => c.industry).filter(Boolean))];
 
+  const saveLead = () => {
+    if (!newLead.company) return;
+    const lead = { ...newLead, id: Date.now(), createdAt: new Date().toISOString(), calls: [] };
+    const updated = [lead, ...leads];
+    setLeads(updated);
+    localStorage.setItem('helix8_leads', JSON.stringify(updated));
+    setNewLead({ company: '', contact: '', phone: '', email: '', industry: '', status: 'not_contacted', notes: '', followUpDate: '' });
+    setShowAddLead(false);
+  };
+
+  const updateLead = (id, changes) => {
+    const updated = leads.map(l => l.id === id ? { ...l, ...changes } : l);
+    setLeads(updated);
+    localStorage.setItem('helix8_leads', JSON.stringify(updated));
+  };
+
+  const deleteLead = (id) => {
+    if (!window.confirm('Delete this lead?')) return;
+    const updated = leads.filter(l => l.id !== id);
+    setLeads(updated);
+    localStorage.setItem('helix8_leads', JSON.stringify(updated));
+  };
+
+  const addCallLog = (id, note) => {
+    const updated = leads.map(l => l.id === id ? { ...l, calls: [...(l.calls||[]), { note, date: new Date().toISOString() }] } : l);
+    setLeads(updated);
+    localStorage.setItem('helix8_leads', JSON.stringify(updated));
+  };
+
+  const statusColors = {
+    not_contacted: '#64748b',
+    contacted: '#06b6d4',
+    interested: '#f59e0b',
+    demo_scheduled: '#8b5cf6',
+    signed_up: '#22c55e',
+    not_interested: '#ef4444',
+  };
+
+  const statusLabels = {
+    not_contacted: 'Not Contacted',
+    contacted: 'Contacted',
+    interested: 'Interested',
+    demo_scheduled: 'Demo Scheduled',
+    signed_up: '✅ Signed Up',
+    not_interested: 'Not Interested',
+  };
+
   const S = {
     page: { minHeight: '100vh', backgroundColor: '#04081a', color: 'white', fontFamily: 'Segoe UI, sans-serif' },
     header: { backgroundColor: '#0a0f2c', borderBottom: '1px solid rgba(6,182,212,0.2)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
@@ -133,8 +185,19 @@ function SuperAdmin() {
       </div>
 
       <div style={S.body}>
+        {/* Tab Navigation */}
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '28px', backgroundColor: '#0a0f2c', borderRadius: '10px', padding: '4px', width: 'fit-content', border: '1px solid rgba(6,182,212,0.15)' }}>
+          {[['companies', '🏢 Companies'], ['leads', '📞 CRM Leads']].map(([tab, label]) => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '14px', backgroundColor: activeTab === tab ? '#06b6d4' : 'transparent', color: activeTab === tab ? '#0a0f2c' : '#94a3b8' }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
         {loading && <p style={{ color: '#64748b' }}>Loading...</p>}
 
+        {activeTab === 'companies' && <>
         {stats && (
           <div style={S.statsGrid}>
             <div style={S.statCard}>
@@ -264,6 +327,109 @@ function SuperAdmin() {
             ))}
           </tbody>
         </table>
+        </>}
+
+        {/* CRM LEADS TAB */}
+        {activeTab === 'leads' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div>
+                <h2 style={{ margin: 0, color: 'white', fontSize: '20px', fontWeight: '800' }}>📞 Sales Pipeline</h2>
+                <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '13px' }}>{leads.length} leads • {leads.filter(l=>l.status==='signed_up').length} converted</p>
+              </div>
+              <button onClick={() => setShowAddLead(true)}
+                style={{ padding: '10px 20px', backgroundColor: '#06b6d4', color: '#0a0f2c', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                + Add Lead
+              </button>
+            </div>
+
+            {/* Pipeline summary */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+              {Object.entries(statusLabels).map(([key, label]) => {
+                const count = leads.filter(l => l.status === key).length;
+                return (
+                  <div key={key} style={{ backgroundColor: '#0a0f2c', border: `1px solid ${statusColors[key]}30`, borderRadius: '8px', padding: '10px 16px', textAlign: 'center', minWidth: '100px' }}>
+                    <div style={{ color: statusColors[key], fontWeight: '800', fontSize: '20px' }}>{count}</div>
+                    <div style={{ color: '#64748b', fontSize: '11px', textTransform: 'uppercase' }}>{label}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Add Lead Form */}
+            {showAddLead && (
+              <div style={{ backgroundColor: '#0a0f2c', border: '1px solid rgba(6,182,212,0.3)', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
+                <h3 style={{ margin: '0 0 16px', color: 'white' }}>New Lead</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '12px' }}>
+                  {[['company','Company Name *'],['contact','Contact Name'],['phone','Phone'],['email','Email'],['industry','Industry']].map(([field, placeholder]) => (
+                    <input key={field} placeholder={placeholder} value={newLead[field]} onChange={e => setNewLead(p => ({...p, [field]: e.target.value}))}
+                      style={{ padding: '10px', backgroundColor: '#04081a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '14px' }} />
+                  ))}
+                  <input type="date" value={newLead.followUpDate} onChange={e => setNewLead(p => ({...p, followUpDate: e.target.value}))}
+                    style={{ padding: '10px', backgroundColor: '#04081a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '14px' }} />
+                </div>
+                <textarea placeholder="Notes from call..." value={newLead.notes} onChange={e => setNewLead(p => ({...p, notes: e.target.value}))}
+                  style={{ width: '100%', padding: '10px', backgroundColor: '#04081a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '14px', marginBottom: '12px', boxSizing: 'border-box', minHeight: '80px' }} />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={saveLead} style={{ padding: '10px 24px', backgroundColor: '#06b6d4', color: '#0a0f2c', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>Save Lead</button>
+                  <button onClick={() => setShowAddLead(false)} style={{ padding: '10px 24px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#94a3b8', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {/* Leads List */}
+            {leads.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px' }}>📞</div>
+                <p>No leads yet. Add your first prospect.</p>
+              </div>
+            ) : leads.map(lead => (
+              <div key={lead.id} style={{ backgroundColor: '#0a0f2c', border: `1px solid ${statusColors[lead.status]}30`, borderRadius: '12px', padding: '20px', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                      <span style={{ color: 'white', fontWeight: '700', fontSize: '16px' }}>{lead.company}</span>
+                      <span style={{ backgroundColor: `${statusColors[lead.status]}20`, color: statusColors[lead.status], padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>
+                        {statusLabels[lead.status]}
+                      </span>
+                    </div>
+                    <div style={{ color: '#94a3b8', fontSize: '13px' }}>
+                      {lead.contact && <span style={{ marginRight: '12px' }}>👤 {lead.contact}</span>}
+                      {lead.phone && <span style={{ marginRight: '12px' }}>📱 {lead.phone}</span>}
+                      {lead.email && <span style={{ marginRight: '12px' }}>✉️ {lead.email}</span>}
+                      {lead.industry && <span>🔧 {lead.industry}</span>}
+                    </div>
+                    {lead.notes && <p style={{ margin: '8px 0 0', color: '#64748b', fontSize: '13px', fontStyle: 'italic' }}>"{lead.notes}"</p>}
+                    {lead.followUpDate && <p style={{ margin: '6px 0 0', color: '#f59e0b', fontSize: '12px' }}>📅 Follow up: {new Date(lead.followUpDate).toLocaleDateString()}</p>}
+                    {lead.calls && lead.calls.length > 0 && (
+                      <div style={{ marginTop: '8px' }}>
+                        {lead.calls.slice(-2).map((call, i) => (
+                          <div key={i} style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                            📝 {new Date(call.date).toLocaleDateString()} — {call.note}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <select value={lead.status} onChange={e => updateLead(lead.id, { status: e.target.value })}
+                      style={{ padding: '6px 10px', backgroundColor: '#04081a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: 'white', fontSize: '12px', cursor: 'pointer' }}>
+                      {Object.entries(statusLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+                    </select>
+                    <button onClick={() => { const note = prompt('Call note:'); if (note) addCallLog(lead.id, note); }}
+                      style={{ padding: '6px 12px', backgroundColor: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.3)', color: '#06b6d4', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
+                      📝 Log Call
+                    </button>
+                    <button onClick={() => deleteLead(lead.id)}
+                      style={{ padding: '6px 10px', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
+                      🗑
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
