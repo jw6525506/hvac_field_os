@@ -726,7 +726,7 @@ function App() {
         {currentPage === 'invoices' && user.role !== 'technician' && <Invoices />}
         {currentPage === 'billing' && user.role !== 'technician' && <Billing currentUser={user} />}
         {currentPage === 'map' && <MapView />}
-        {currentPage === 'inventory' && <Inventory />}
+        {currentPage === 'inventory' && <Inventory user={user} token={localStorage.getItem('token')} />}
         {currentPage === 'payroll' && <Payroll token={localStorage.getItem('token')} user={user} />}
         {currentPage === 'settings' && <Settings />}
         {currentPage === 'users' && user.role === 'admin' && <Users />}
