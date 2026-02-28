@@ -283,6 +283,10 @@ function LandingPage({ onLogin, onSignup }) {
       <footer className="footer">
         <div className="footer-logo">Helix<span>8</span></div>
         <div className="footer-copy">© 2026 Helix8 by Octave Labs. Built for trades professionals.</div>
+        <div style={{ marginTop: '12px', display: 'flex', gap: '24px', justifyContent: 'center' }}>
+          <a href="/privacy" style={{ color: '#64748b', fontSize: '13px', textDecoration: 'none' }}>Privacy Policy</a>
+          <a href="/terms" style={{ color: '#64748b', fontSize: '13px', textDecoration: 'none' }}>Terms of Service</a>
+        </div>
       </footer>
     </div>
   );

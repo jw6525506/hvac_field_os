@@ -12,6 +12,8 @@ import Users from './components/Users';
 import MapView from './components/MapView';
 import LandingPage from './components/LandingPage';
 import SuperAdmin from './components/SuperAdmin';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
 import Settings from './components/Settings';
 import PaymentPage from './components/PaymentPage';
 import Payroll from './components/Payroll';
