@@ -1020,6 +1020,19 @@ app.post('/api/auth/2fa/send', async (req, res) => {
 });
 
 app.post('/api/auth/2fa/verify', async (req, res) => {
+  // 2FA DISABLED - auto verify
+  const { email } = req.body;
+  try {
+    const userResult = await pool.query('SELECT * FROM "Users" WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) return res.status(400).json({ message: 'User not found' });
+    const user = userResult.rows[0];
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, companyId: user.companyId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    return res.json({ token, user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, companyId: user.companyId } });
+  } catch (err) {
+    return res.status(500).json({ message: 'Error' });
+  }
+  // ORIGINAL 2FA CODE BELOW (disabled)
+  if (false) {
   const { email, code } = req.body;
   if (!email || !code) return res.status(400).json({ message: 'Email and code required' });
   try {
