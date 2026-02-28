@@ -1032,7 +1032,7 @@ app.post('/api/auth/2fa/verify', async (req, res) => {
     return res.status(500).json({ message: 'Error' });
   }
   // ORIGINAL 2FA CODE BELOW (disabled)
-  if (false) {
+  if (false) { /* disabled */
   const { email, code } = req.body;
   if (!email || !code) return res.status(400).json({ message: 'Email and code required' });
   try {
@@ -1061,6 +1061,7 @@ app.post('/api/auth/2fa/verify', async (req, res) => {
     console.error('2FA verify error:', err.message);
     res.status(500).json({ message: 'Verification failed' });
   }
+  } // end if(false)
 });
 
 // ─── COMPANY BRANDING ────────────────────────────────────
