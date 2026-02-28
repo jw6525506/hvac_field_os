@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
-function Payroll({ token, user }) {
+function Payroll({ token: tokenProp, user }) {
+  const token = tokenProp || localStorage.getItem('token');
   const [clockStatus, setClockStatus] = useState({ clockedIn: false, entry: null });
   const [summary, setSummary] = useState([]);
   const [entries, setEntries] = useState([]);
