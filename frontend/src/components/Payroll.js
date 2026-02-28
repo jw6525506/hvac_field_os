@@ -13,7 +13,7 @@ function Payroll({ token, user }) {
   const [editingRates, setEditingRates] = useState({});
   const [clockElapsed, setClockElapsed] = useState('');
 
-  const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+  const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (token || localStorage.getItem('token')) };
 
   const fetchAll = useCallback(async () => {
     try {
@@ -28,6 +28,11 @@ function Payroll({ token, user }) {
     } catch (err) { console.error(err); }
     setLoading(false);
   }, [startDate, endDate, token]);
+
+  // Refetch when token becomes available
+  useEffect(() => {
+    if (token) fetchAll();
+  }, [token]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
