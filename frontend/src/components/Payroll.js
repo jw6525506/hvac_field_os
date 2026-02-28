@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_BASE = 'https://hvacfieldos-production.up.railway.app/api';
 
 function Payroll({ token: tokenProp, user }) {
   const token = tokenProp || localStorage.getItem('token');
