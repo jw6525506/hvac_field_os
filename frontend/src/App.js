@@ -13,6 +13,7 @@ import MapView from './components/MapView';
 import LandingPage from './components/LandingPage';
 import SuperAdmin from './components/SuperAdmin';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import Estimates from './components/Estimates';
 import TermsOfService from './components/TermsOfService';
 import Settings from './components/Settings';
 import PaymentPage from './components/PaymentPage';
@@ -488,6 +489,7 @@ function App() {
     { page: 'map', icon: '🗺️', label: t('jobMap') },
     { page: 'inventory', icon: '📦', label: t('inventory') },
     { page: 'payroll', icon: '💰', label: 'Payroll' },
+    { page: 'estimates', icon: '📋', label: 'Estimates' },
     { page: 'settings', icon: '⚙️', label: 'Settings' },
     { page: 'users', icon: '👤', label: 'Team' },
   ];
@@ -732,6 +734,7 @@ function App() {
         {currentPage === 'billing' && user.role !== 'technician' && <Billing currentUser={user} />}
         {currentPage === 'map' && <MapView />}
         {currentPage === 'inventory' && <Inventory user={user} token={localStorage.getItem('token')} />}
+        {currentPage === 'estimates' && <Estimates user={user} />}
         {currentPage === 'payroll' && <Payroll token={localStorage.getItem('token')} user={user} />}
         {currentPage === 'settings' && <Settings />}
         {currentPage === 'users' && user.role === 'admin' && <Users />}
