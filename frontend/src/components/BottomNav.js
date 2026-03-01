@@ -7,7 +7,12 @@ function BottomNav({ currentPage, setCurrentPage, userRole }) {
     { page: 'customers', icon: '👥', label: 'Customers' },
     { page: 'workorders', icon: '📋', label: 'Jobs' },
     { page: 'invoices', icon: '💰', label: 'Invoices' },
-    { page: 'billing', icon: '💳', label: 'Billing' },
+    { page: 'estimates', icon: '📄', label: 'Estimates' },
+    { page: 'maintenance', icon: '🔧', label: 'Maintenance' },
+    { page: 'inventory', icon: '📦', label: 'Inventory' },
+    { page: 'payroll', icon: '⏱️', label: 'Payroll' },
+    { page: 'map', icon: '🗺️', label: 'Map' },
+    { page: 'settings', icon: '⚙️', label: 'Settings' },
   ];
   const navItems = userRole === 'technician' ? allItems.filter(i => techItems.includes(i.page)) : allItems;
 
@@ -17,7 +22,7 @@ function BottomNav({ currentPage, setCurrentPage, userRole }) {
       position: 'fixed', bottom: 0, left: 0, right: 0,
       backgroundColor: '#0a0f2c', borderTop: '1px solid #1e293b',
       zIndex: 999, height: '62px',
-      gridTemplateColumns: 'repeat(5, 1fr)',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))',
     }}>
       {navItems.map(({ page, icon, label }) => (
         <button key={page} onClick={() => setCurrentPage(page)}
