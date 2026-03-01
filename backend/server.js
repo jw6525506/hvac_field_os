@@ -833,6 +833,73 @@ app.post('/api/contact', async (req, res) => {
 
 
 
+
+// ─── MAINTENANCE PLANS ────────────────────────────────────
+
+app.get('/api/maintenance/plans', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM "MaintenancePlans" WHERE "companyId"=$1 ORDER BY price ASC', [req.user.companyId]);
+    res.json({ plans: result.rows });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load plans' });
+  }
+});
+
+app.post('/api/maintenance/plans', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { name, description, price, interval, visits, features } = req.body;
+    const result = await pool.query(
+      `INSERT INTO "MaintenancePlans" (name, description, price, interval, visits, features, "companyId", "createdAt", "updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,NOW(),NOW()) RETURNING *`,
+      [name, description, price, interval || 'monthly', visits || 2, features, req.user.companyId]
+    );
+    res.json({ plan: result.rows[0] });
+  } catch (err) {
+    console.error('Create plan error:', err.message);
+    res.status(500).json({ message: 'Failed to create plan' });
+  }
+});
+
+app.get('/api/maintenance/subscriptions', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT ms.*, c."firstName" as "customerFirstName", c."lastName" as "customerLastName",
+        mp.name as "planName", mp.price as "planPrice", mp.interval as "planInterval", mp.visits
+      FROM "MaintenanceSubscriptions" ms
+      LEFT JOIN "Customers" c ON ms."customerId"=c.id
+      LEFT JOIN "MaintenancePlans" mp ON ms."planId"=mp.id
+      WHERE ms."companyId"=$1
+      ORDER BY ms."createdAt" DESC
+    `, [req.user.companyId]);
+    res.json({ subscriptions: result.rows });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load subscriptions' });
+  }
+});
+
+app.post('/api/maintenance/subscriptions', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { customerId, planId, startDate, notes } = req.body;
+    const result = await pool.query(
+      `INSERT INTO "MaintenanceSubscriptions" ("customerId", "planId", "companyId", "startDate", notes, status, "createdAt", "updatedAt") VALUES ($1,$2,$3,$4,$5,'active',NOW(),NOW()) RETURNING *`,
+      [customerId, planId, req.user.companyId, startDate, notes]
+    );
+    res.json({ subscription: result.rows[0] });
+  } catch (err) {
+    console.error('Create subscription error:', err.message);
+    res.status(500).json({ message: 'Failed to create subscription' });
+  }
+});
+
+app.patch('/api/maintenance/subscriptions/:id/status', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    await pool.query('UPDATE "MaintenanceSubscriptions" SET status=$1, "updatedAt"=NOW() WHERE id=$2 AND "companyId"=$3', [status, req.params.id, req.user.companyId]);
+    res.json({ message: 'Updated' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update' });
+  }
+});
+
 // ─── ESTIMATES ────────────────────────────────────────────
 
 app.get('/api/estimates', requireAuth, async (req, res) => {

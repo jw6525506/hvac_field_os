@@ -14,6 +14,7 @@ import LandingPage from './components/LandingPage';
 import SuperAdmin from './components/SuperAdmin';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import Estimates from './components/Estimates';
+import MaintenancePlans from './components/MaintenancePlans';
 import TermsOfService from './components/TermsOfService';
 import Settings from './components/Settings';
 import PaymentPage from './components/PaymentPage';
@@ -490,6 +491,7 @@ function App() {
     { page: 'inventory', icon: '📦', label: t('inventory') },
     { page: 'payroll', icon: '💰', label: 'Payroll' },
     { page: 'estimates', icon: '📋', label: 'Estimates' },
+    { page: 'maintenance', icon: '🔧', label: 'Maintenance' },
     { page: 'settings', icon: '⚙️', label: 'Settings' },
     { page: 'users', icon: '👤', label: 'Team' },
   ];
@@ -735,6 +737,7 @@ function App() {
         {currentPage === 'map' && <MapView />}
         {currentPage === 'inventory' && <Inventory user={user} token={localStorage.getItem('token')} />}
         {currentPage === 'estimates' && <Estimates user={user} />}
+        {currentPage === 'maintenance' && <MaintenancePlans user={user} />}
         {currentPage === 'payroll' && <Payroll token={localStorage.getItem('token')} user={user} />}
         {currentPage === 'settings' && <Settings />}
         {currentPage === 'users' && user.role === 'admin' && <Users />}
