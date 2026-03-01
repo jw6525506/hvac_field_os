@@ -834,6 +834,68 @@ app.post('/api/contact', async (req, res) => {
 
 
 
+
+// ─── MANUALS ────────────────────────────────────────────
+
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+app.get('/api/manuals', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM "Manuals" WHERE "companyId"=$1 ORDER BY brand, model ASC',
+      [req.user.companyId]
+    );
+    res.json({ manuals: result.rows });
+  } catch (err) {
+    console.error('Get manuals error:', err.message);
+    res.status(500).json({ message: 'Failed to load manuals' });
+  }
+});
+
+app.post('/api/manuals', requireAuth, requireAdmin, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    const { brand, model, industry, docType, description } = req.body;
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { resource_type: 'raw', folder: 'helix8-manuals', format: 'pdf', public_id: `${brand}-${model}-${Date.now()}`.replace(/[^a-zA-Z0-9-]/g, '-') },
+        (error, result) => error ? reject(error) : resolve(result)
+      ).end(req.file.buffer);
+    });
+
+    const result = await pool.query(
+      `INSERT INTO "Manuals" (brand, model, industry, "docType", description, "fileUrl", "publicId", "companyId", "createdAt", "updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW(),NOW()) RETURNING *`,
+      [brand, model, industry, docType, description, uploadResult.secure_url, uploadResult.public_id, req.user.companyId]
+    );
+    res.json({ manual: result.rows[0] });
+  } catch (err) {
+    console.error('Upload manual error:', err.message);
+    res.status(500).json({ message: 'Failed to upload manual' });
+  }
+});
+
+app.delete('/api/manuals/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM "Manuals" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Not found' });
+    const manual = result.rows[0];
+    if (manual.publicId) await cloudinary.uploader.destroy(manual.publicId, { resource_type: 'raw' });
+    await pool.query('DELETE FROM "Manuals" WHERE id=$1', [req.params.id]);
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete' });
+  }
+});
+
 // ─── MAINTENANCE PLANS ────────────────────────────────────
 
 app.get('/api/maintenance/plans', requireAuth, async (req, res) => {

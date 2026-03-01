@@ -9,6 +9,7 @@ function BottomNav({ currentPage, setCurrentPage, userRole }) {
     { page: 'invoices', icon: '💰', label: 'Invoices' },
     { page: 'estimates', icon: '📄', label: 'Estimates' },
     { page: 'maintenance', icon: '🔧', label: 'Maintenance' },
+    { page: 'manuals', icon: '📚', label: 'Manuals' },
     { page: 'inventory', icon: '📦', label: 'Inventory' },
     { page: 'payroll', icon: '⏱️', label: 'Payroll' },
     { page: 'map', icon: '🗺️', label: 'Map' },
