@@ -393,7 +393,10 @@ function App() {
   }
 
   if (showLanding && !user) {
-    return <LandingPage
+    if (window.location.pathname === '/privacy') return <PrivacyPolicy />;
+  if (window.location.pathname === '/terms') return <TermsOfService />;
+
+  return <LandingPage
       onLogin={() => setShowLanding(false)}
       onSignup={() => { setShowLanding(false); setShowSignup(true); }}
     />;
