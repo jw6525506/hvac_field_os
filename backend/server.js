@@ -832,6 +832,67 @@ app.post('/api/contact', async (req, res) => {
 
 
 
+
+// ─── ESTIMATES ────────────────────────────────────────────
+
+app.get('/api/estimates', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT e.*, c."firstName" as "customerFirstName", c."lastName" as "customerLastName"
+      FROM "Estimates" e
+      LEFT JOIN "Customers" c ON e."customerId"=c.id
+      WHERE e."companyId"=$1
+      ORDER BY e."createdAt" DESC
+    `, [req.user.companyId]);
+    res.json({ estimates: result.rows });
+  } catch (err) {
+    console.error('Get estimates error:', err.message);
+    res.status(500).json({ message: 'Failed to load estimates' });
+  }
+});
+
+app.post('/api/estimates', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { customerId, title, description, lineItems, subtotal, taxRate, taxAmount, total, validDays, notes } = req.body;
+    const estimateNumber = 'EST-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+    const result = await pool.query(`
+      INSERT INTO "Estimates" ("estimateNumber", "customerId", "companyId", title, description, "lineItems", subtotal, "taxRate", "taxAmount", total, "validDays", notes, status, "createdAt", "updatedAt")
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'draft',NOW(),NOW()) RETURNING *
+    `, [estimateNumber, customerId, req.user.companyId, title, description, JSON.stringify(lineItems), subtotal, taxRate, taxAmount, total, validDays || 30, notes]);
+    res.json({ estimate: result.rows[0] });
+  } catch (err) {
+    console.error('Create estimate error:', err.message);
+    res.status(500).json({ message: 'Failed to create estimate' });
+  }
+});
+
+app.patch('/api/estimates/:id/status', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    await pool.query(`UPDATE "Estimates" SET status=$1, "updatedAt"=NOW() WHERE id=$2 AND "companyId"=$3`, [status, req.params.id, req.user.companyId]);
+    res.json({ message: 'Status updated' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update status' });
+  }
+});
+
+app.post('/api/estimates/:id/convert', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const estResult = await pool.query('SELECT * FROM "Estimates" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    if (estResult.rows.length === 0) return res.status(404).json({ message: 'Estimate not found' });
+    const est = estResult.rows[0];
+    const woResult = await pool.query(`
+      INSERT INTO "WorkOrders" (title, "customerId", "jobType", description, priority, status, "companyId", "createdAt", "updatedAt")
+      VALUES ($1,$2,'Estimate Conversion',$3,'normal','scheduled',$4,NOW(),NOW()) RETURNING *
+    `, [est.title, est.customerId, est.description || est.title, req.user.companyId]);
+    await pool.query("UPDATE \"Estimates\" SET status='converted', \"updatedAt\"=NOW() WHERE id=$1", [req.params.id]);
+    res.json({ workOrder: woResult.rows[0] });
+  } catch (err) {
+    console.error('Convert estimate error:', err.message);
+    res.status(500).json({ message: 'Failed to convert estimate' });
+  }
+});
+
 // ─── PAYROLL / TIME CLOCK ────────────────────────────────
 
 // Clock in
