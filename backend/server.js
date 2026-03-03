@@ -1627,6 +1627,36 @@ app.delete('/api/work-orders/:id/photos/:filename', requireAuth, async (req, res
   }
 });
 
+
+// ─── GLOBAL ERROR HANDLER ─────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.message);
+  console.error(err.stack);
+  
+  // Don't leak error details in production
+  const isDev = process.env.NODE_ENV === 'development';
+  
+  res.status(err.status || 500).json({
+    message: isDev ? err.message : 'An unexpected error occurred',
+    ...(isDev && { stack: err.stack })
+  });
+});
+
+// ─── HANDLE 404 ROUTES ────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ message: `Route ${req.method} ${req.path} not found` });
+});
+
+// ─── HANDLE UNHANDLED PROMISE REJECTIONS ──────────────────
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err.message);
+  console.error(err.stack);
+});
+
 app.listen(PORT, () => {
   console.log('========================================');
   console.log(`Server running on port ${PORT}`);
