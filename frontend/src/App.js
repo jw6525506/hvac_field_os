@@ -16,6 +16,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import Estimates from './components/Estimates';
 import MaintenancePlans from './components/MaintenancePlans';
 import Manuals from './components/Manuals';
+import ErrorBoundary from './components/ErrorBoundary';
 import TermsOfService from './components/TermsOfService';
 import Settings from './components/Settings';
 import PaymentPage from './components/PaymentPage';
@@ -732,17 +733,17 @@ function App() {
         )}
 
         <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} userRole={user.role} />
-        {currentPage === 'customers' && <Customers />}
-        {currentPage === 'workorders' && <WorkOrders />}
+        <ErrorBoundary>{currentPage === 'customers' && <Customers />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'workorders' && <WorkOrders />}</ErrorBoundary>
         {currentPage === 'invoices' && user.role !== 'technician' && <Invoices />}
         {currentPage === 'billing' && user.role !== 'technician' && <Billing currentUser={user} />}
-        {currentPage === 'map' && <MapView />}
-        {currentPage === 'inventory' && <Inventory user={user} token={localStorage.getItem('token')} />}
-        {currentPage === 'estimates' && <Estimates user={user} />}
-        {currentPage === 'maintenance' && <MaintenancePlans user={user} />}
-        {currentPage === 'manuals' && <Manuals user={user} />}
-        {currentPage === 'payroll' && <Payroll token={localStorage.getItem('token')} user={user} />}
-        {currentPage === 'settings' && <Settings />}
+        <ErrorBoundary>{currentPage === 'map' && <MapView />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'inventory' && <Inventory user={user} token={localStorage.getItem('token')} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'estimates' && <Estimates user={user} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'maintenance' && <MaintenancePlans user={user} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'manuals' && <Manuals user={user} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'payroll' && <Payroll token={localStorage.getItem('token')} user={user} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'settings' && <Settings />}</ErrorBoundary>
         {currentPage === 'users' && user.role === 'admin' && <Users />}
       </div>
     </div>
