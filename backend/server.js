@@ -140,7 +140,10 @@ app.get('/health', async (req, res) => {
 
 // ─── AUTH ────────────────────────────────────────────────
 
-app.post('/api/auth/login', loginLimiter, async (req, res) => {
+app.post('/api/auth/login', loginLimiter, [
+  body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
+  body('password').notEmpty().withMessage('Password required'),
+], validate, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: 'Email and password are required' });
@@ -176,7 +179,14 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
   }
 });
 
-app.post('/api/auth/register-company', async (req, res) => {
+app.post('/api/auth/register-company', [
+  body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/^(?=.*[A-Z])(?=.*[0-9])/).withMessage('Password must contain uppercase letter and number'),
+  body('companyName').notEmpty().withMessage('Company name required').isLength({ max: 100 }),
+  body('firstName').notEmpty().withMessage('First name required').isLength({ max: 50 }),
+  body('lastName').notEmpty().withMessage('Last name required').isLength({ max: 50 }),
+], validate, async (req, res) => {
   const { companyName, companyEmail, companyPhone, firstName, lastName, email, password } = req.body;
   if (!companyName || !firstName || !lastName || !email || !password) {
     return res.status(400).json({ message: 'All fields are required' });
@@ -503,7 +513,12 @@ app.get('/api/customers', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/customers', requireAuth, async (req, res) => {
+app.post('/api/customers', requireAuth, [
+  body('firstName').notEmpty().withMessage('First name required').isLength({ max: 50 }),
+  body('lastName').notEmpty().withMessage('Last name required').isLength({ max: 50 }),
+  body('email').optional().isEmail().withMessage('Valid email required'),
+  body('phone').optional().isLength({ max: 20 }),
+], validate, async (req, res) => {
   const { firstName, lastName, phone, email, address } = req.body;
   try {
     const result = await pool.query(
@@ -568,7 +583,10 @@ app.get('/api/work-orders', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/work-orders', requireAuth, async (req, res) => {
+app.post('/api/work-orders', requireAuth, [
+  body('customerId').notEmpty().withMessage('Customer required'),
+  body('jobType').notEmpty().withMessage('Job type required'),
+], validate, async (req, res) => {
   const { customerId, jobType, description, priority, scheduledDate, scheduledTime, assignedTo, title } = req.body;
   try {
     const result = await pool.query(
@@ -679,7 +697,11 @@ app.get('/api/invoices', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/invoices', requireAuth, async (req, res) => {
+app.post('/api/invoices', requireAuth, [
+  body('customerId').notEmpty().withMessage('Customer required'),
+  body('total').isFloat({ min: 0 }).withMessage('Valid total required'),
+  body('lineItems').isArray({ min: 1 }).withMessage('At least one line item required'),
+], validate, async (req, res) => {
   const { workOrderId, customerId, lineItems, subtotal, taxRate, taxAmount, total } = req.body;
   const invoiceNumber = `INV-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
   try {
