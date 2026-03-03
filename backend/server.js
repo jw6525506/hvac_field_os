@@ -9,6 +9,8 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 const multer = require('multer');
+const helmet = require('helmet');
+const { body, validationResult } = require('express-validator');
 const cloudinary = require('cloudinary').v2;
 const path = require('path');
 const fs = require('fs');
@@ -80,10 +82,15 @@ pool.connect((err, client, release) => {
 });
 
 app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false,
+}));
 
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
