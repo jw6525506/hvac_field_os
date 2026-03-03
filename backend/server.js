@@ -62,13 +62,16 @@ const PORT = process.env.PORT || 3000;
 
 const pool = new Pool(
   process.env.DATABASE_URL
-    ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }
+    ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, max: 20, idleTimeoutMillis: 30000, connectionTimeoutMillis: 2000 }
     : {
         host: process.env.DB_HOST || 'localhost',
         database: process.env.DB_NAME || 'Helix8',
         user: process.env.DB_USER || 'postgres',
         password: process.env.DB_PASSWORD || 'password123',
         port: 5432,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
       }
 );
 
