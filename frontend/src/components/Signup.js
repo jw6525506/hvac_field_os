@@ -1,3 +1,4 @@
+import { validateForm, hasErrors, FieldError, inputStyle, validators } from '../utils/validation';
 import React, { useState } from 'react';
 
 const API_BASE = 'http://localhost:3000/api';
@@ -26,7 +27,14 @@ function Signup({ onSignupSuccess }) {
 
   const handleStep1 = (e) => {
     e.preventDefault();
-    if (!form.companyName) { setError('Company name is required'); return; }
+    const errors = validateForm(form, {
+      companyName: [v => validators.required(v, 'Company name')],
+      firstName: [v => validators.required(v, 'First name')],
+      lastName: [v => validators.required(v, 'Last name')],
+      email: [v => validators.required(v, 'Email'), v => validators.email(v)],
+      password: [v => validators.password(v)],
+    });
+    if (hasErrors(errors)) { setError(Object.values(errors)[0]); return; }
     setError('');
     setStep(2);
   };

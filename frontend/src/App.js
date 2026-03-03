@@ -17,6 +17,7 @@ import Estimates from './components/Estimates';
 import MaintenancePlans from './components/MaintenancePlans';
 import Manuals from './components/Manuals';
 import ErrorBoundary from './components/ErrorBoundary';
+import { validateForm, hasErrors, validators, FieldError, inputStyle } from './utils/validation';
 import TermsOfService from './components/TermsOfService';
 import Settings from './components/Settings';
 import PaymentPage from './components/PaymentPage';
@@ -222,7 +223,15 @@ function App() {
     }
   };
 
+  const [loginErrors, setLoginErrors] = useState({});
+
   const handleLogin = async (e) => {
+    const errors = validateForm({ email, password }, {
+      email: [v => validators.required(v, 'Email'), v => validators.email(v)],
+      password: [v => validators.required(v, 'Password')],
+    });
+    if (hasErrors(errors)) { setLoginErrors(errors); return; }
+    setLoginErrors({});
     e.preventDefault(); setError(''); setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/auth/login`, {
