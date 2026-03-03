@@ -12,6 +12,25 @@ const multer = require('multer');
 const helmet = require('helmet');
 const { body, validationResult } = require('express-validator');
 const cloudinary = require('cloudinary').v2;
+
+// ─── VALIDATION HELPER ────────────────────────────────────
+const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: errors.array()[0].msg });
+  }
+  next();
+};
+
+const sanitize = (obj) => {
+  if (typeof obj !== 'object' || obj === null) return obj;
+  const clean = {};
+  for (const key of Object.keys(obj)) {
+    clean[key] = typeof obj[key] === 'string' ? obj[key].trim() : obj[key];
+  }
+  return clean;
+};
+
 const path = require('path');
 const fs = require('fs');
 
