@@ -19,6 +19,13 @@ function SuperAdmin() {
   const [showAddLead, setShowAddLead] = useState(false);
   const [newLead, setNewLead] = useState({ company: '', contact: '', phone: '', email: '', industry: '', status: 'not_contacted', notes: '', followUpDate: '' });
   const [editingLead, setEditingLead] = useState(null);
+  const [dbLeads, setDbLeads] = useState([]);
+  const [dbTotal, setDbTotal] = useState(0);
+  const [dbPage, setDbPage] = useState(1);
+  const [dbLoading, setDbLoading] = useState(false);
+  const [dbSearch, setDbSearch] = useState('');
+  const [dbIndustry, setDbIndustry] = useState('');
+  const [dbState2, setDbState2] = useState('');
 
   useEffect(() => {
     if (token) { setAuthed(true); loadStats(); }
@@ -61,6 +68,33 @@ function SuperAdmin() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadDbLeads = async (page=1) => {
+    setDbLoading(true);
+    try {
+      const params = new URLSearchParams({ page, limit: 50 });
+      if (dbSearch) params.append('search', dbSearch);
+      if (dbIndustry) params.append('industry', dbIndustry);
+      if (dbState2) params.append('state', dbState2);
+      const res = await fetch(API_BASE + '/super-admin/leads?' + params, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      setDbLeads(data.leads || []);
+      setDbTotal(data.total || 0);
+      setDbPage(page);
+    } catch(e) { console.error(e); }
+    finally { setDbLoading(false); }
+  };
+
+  const updateDbLead = async (id, status) => {
+    await fetch(API_BASE + '/super-admin/leads/' + id, {
+      method: 'PATCH',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, notes: '' })
+    });
+    setDbLeads(prev => prev.map(l => l.id === id ? {...l, status} : l));
   };
 
   const handleLogout = () => {
@@ -187,7 +221,7 @@ function SuperAdmin() {
       <div style={S.body}>
         {/* Tab Navigation */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '28px', backgroundColor: '#0a0f2c', borderRadius: '10px', padding: '4px', width: 'fit-content', border: '1px solid rgba(6,182,212,0.15)' }}>
-          {[['companies', '🏢 Companies'], ['leads', '📞 CRM Leads']].map(([tab, label]) => (
+          {[['companies', '🏢 Companies'], ['leads', '📞 CRM Leads'], ['dbleads', '📋 Database Leads']].map(([tab, label]) => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '14px', backgroundColor: activeTab === tab ? '#06b6d4' : 'transparent', color: activeTab === tab ? '#0a0f2c' : '#94a3b8' }}>
               {label}
@@ -328,6 +362,105 @@ function SuperAdmin() {
           </tbody>
         </table>
         </>}
+
+
+        {activeTab === 'dbleads' && (
+          <div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px',flexWrap:'wrap',gap:'12px'}}>
+              <div>
+                <h2 style={{margin:0,color:'white',fontSize:'20px',fontWeight:'800'}}>Database Leads</h2>
+                <p style={{margin:'4px 0 0',color:'#64748b',fontSize:'13px'}}>{dbTotal.toLocaleString()} total leads from FL + TX public records</p>
+              </div>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'12px',marginBottom:'20px'}}>
+              <div style={{backgroundColor:'#0a0f2c',border:'1px solid rgba(6,182,212,0.15)',borderRadius:'10px',padding:'16px',textAlign:'center'}}>
+                <div style={{fontSize:'24px',fontWeight:'800',color:'#06b6d4'}}>31,721</div>
+                <div style={{fontSize:'12px',color:'#64748b',textTransform:'uppercase',fontWeight:'600'}}>Florida</div>
+              </div>
+              <div style={{backgroundColor:'#0a0f2c',border:'1px solid rgba(6,182,212,0.15)',borderRadius:'10px',padding:'16px',textAlign:'center'}}>
+                <div style={{fontSize:'24px',fontWeight:'800',color:'#06b6d4'}}>57,180</div>
+                <div style={{fontSize:'12px',color:'#64748b',textTransform:'uppercase',fontWeight:'600'}}>Texas</div>
+              </div>
+              <div style={{backgroundColor:'#0a0f2c',border:'1px solid rgba(34,197,94,0.3)',borderRadius:'10px',padding:'16px',textAlign:'center'}}>
+                <div style={{fontSize:'24px',fontWeight:'800',color:'#22c55e'}}>{dbTotal.toLocaleString()}</div>
+                <div style={{fontSize:'12px',color:'#64748b',textTransform:'uppercase',fontWeight:'600'}}>In Database</div>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:'10px',marginBottom:'16px',flexWrap:'wrap'}}>
+              <input placeholder="Search name, company, city..." value={dbSearch} onChange={e=>setDbSearch(e.target.value)}
+                onKeyDown={e=>e.key==='Enter'&&loadDbLeads(1)}
+                style={{padding:'10px 14px',backgroundColor:'#0a0f2c',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'8px',color:'white',fontSize:'14px',flex:1,minWidth:'200px'}}/>
+              <select value={dbIndustry} onChange={e=>setDbIndustry(e.target.value)}
+                style={{padding:'10px',backgroundColor:'#0a0f2c',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'8px',color:'white',fontSize:'14px'}}>
+                <option value="">All Industries</option>
+                <option value="HVAC">HVAC</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="Roofing">Roofing</option>
+              </select>
+              <select value={dbState2} onChange={e=>setDbState2(e.target.value)}
+                style={{padding:'10px',backgroundColor:'#0a0f2c',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'8px',color:'white',fontSize:'14px'}}>
+                <option value="">All States</option>
+                <option value="FL">Florida</option>
+                <option value="TX">Texas</option>
+              </select>
+              <button onClick={()=>loadDbLeads(1)}
+                style={{padding:'10px 20px',backgroundColor:'#06b6d4',color:'#0a0f2c',border:'none',borderRadius:'8px',fontWeight:'700',cursor:'pointer'}}>
+                Search
+              </button>
+            </div>
+            {dbLoading && <p style={{color:'#64748b',textAlign:'center',padding:'40px'}}>Loading...</p>}
+            {dbLeads.length===0 && !dbLoading && (
+              <div style={{textAlign:'center',padding:'60px',color:'#64748b'}}>
+                <div style={{fontSize:'48px',marginBottom:'12px'}}>📋</div>
+                <p>Click Search to load leads</p>
+              </div>
+            )}
+            {dbLeads.length>0 && (<>
+              <table style={{width:'100%',borderCollapse:'collapse',backgroundColor:'#0a0f2c',borderRadius:'12px',overflow:'hidden',border:'1px solid rgba(6,182,212,0.15)'}}>
+                <thead><tr>
+                  {['Name','Company','Industry','City','State','Status','Action'].map(h=>(
+                    <th key={h} style={{padding:'12px 16px',textAlign:'left',fontSize:'11px',fontWeight:'700',color:'#64748b',textTransform:'uppercase',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {dbLeads.map(lead=>(
+                    <tr key={lead.id} style={{borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                      <td style={{padding:'12px 16px',color:'white',fontSize:'14px'}}>{lead.firstName} {lead.lastName}</td>
+                      <td style={{padding:'12px 16px',color:'#94a3b8',fontSize:'13px'}}>{lead.company}</td>
+                      <td style={{padding:'12px 16px'}}><span style={{color:'#06b6d4',fontSize:'12px',fontWeight:'600'}}>{lead.industry}</span></td>
+                      <td style={{padding:'12px 16px',color:'#94a3b8',fontSize:'13px'}}>{lead.city}</td>
+                      <td style={{padding:'12px 16px',color:'#64748b',fontSize:'13px'}}>{lead.state}</td>
+                      <td style={{padding:'12px 16px'}}>
+                        <select value={lead.status} onChange={e=>updateDbLead(lead.id,e.target.value)}
+                          style={{padding:'4px 8px',backgroundColor:'#04081a',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'6px',color:'white',fontSize:'12px',cursor:'pointer'}}>
+                          <option value="new">New</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="interested">Interested</option>
+                          <option value="signed_up">Signed Up</option>
+                          <option value="not_interested">Not Interested</option>
+                        </select>
+                      </td>
+                      <td style={{padding:'12px 16px'}}>
+                        {lead.phone && <a href={'tel:'+lead.phone} style={{color:'#06b6d4',fontSize:'12px',textDecoration:'none',fontWeight:'600'}}>📞 Call</a>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:'12px',marginTop:'20px'}}>
+                <button onClick={()=>loadDbLeads(dbPage-1)} disabled={dbPage===1}
+                  style={{padding:'8px 16px',backgroundColor:'#0a0f2c',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'6px',color:dbPage===1?'#374151':'white',cursor:dbPage===1?'default':'pointer'}}>
+                  Prev
+                </button>
+                <span style={{color:'#64748b',fontSize:'14px'}}>Page {dbPage} of {Math.ceil(dbTotal/50)}</span>
+                <button onClick={()=>loadDbLeads(dbPage+1)} disabled={dbPage>=Math.ceil(dbTotal/50)}
+                  style={{padding:'8px 16px',backgroundColor:'#0a0f2c',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'6px',color:dbPage>=Math.ceil(dbTotal/50)?'#374151':'white',cursor:dbPage>=Math.ceil(dbTotal/50)?'default':'pointer'}}>
+                  Next
+                </button>
+              </div>
+            </>)}
+          </div>
+        )}
 
         {/* CRM LEADS TAB */}
         {activeTab === 'leads' && (
