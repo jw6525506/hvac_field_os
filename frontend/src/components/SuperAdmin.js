@@ -448,12 +448,12 @@ function SuperAdmin() {
                 </tbody>
               </table>
               <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:'12px',marginTop:'20px'}}>
-                <button onClick={()=>loadDbLeads(dbPage-1)} disabled={dbPage===1}
+                <button onClick={()=>loadDbLeads(dbPage-1, dbSearch, dbIndustry, dbState2)} disabled={dbPage===1}
                   style={{padding:'8px 16px',backgroundColor:'#0a0f2c',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'6px',color:dbPage===1?'#374151':'white',cursor:dbPage===1?'default':'pointer'}}>
                   Prev
                 </button>
                 <span style={{color:'#64748b',fontSize:'14px'}}>Page {dbPage} of {Math.ceil(dbTotal/50)}</span>
-                <button onClick={()=>loadDbLeads(dbPage+1)} disabled={dbPage>=Math.ceil(dbTotal/50)}
+                <button onClick={()=>loadDbLeads(dbPage+1, dbSearch, dbIndustry, dbState2)} disabled={dbPage>=Math.ceil(dbTotal/50)}
                   style={{padding:'8px 16px',backgroundColor:'#0a0f2c',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'6px',color:dbPage>=Math.ceil(dbTotal/50)?'#374151':'white',cursor:dbPage>=Math.ceil(dbTotal/50)?'default':'pointer'}}>
                   Next
                 </button>
