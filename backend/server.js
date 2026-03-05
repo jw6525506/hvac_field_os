@@ -1642,31 +1642,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ─── HANDLE 404 ROUTES ────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({ message: `Route ${req.method} ${req.path} not found` });
-});
-
-// ─── HANDLE UNHANDLED PROMISE REJECTIONS ──────────────────
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err.message);
-  console.error(err.stack);
-});
-
-app.listen(PORT, () => {
-  console.log('========================================');
-  console.log(`Server running on port ${PORT}`);
-  console.log('Database: PostgreSQL (Helix8)');
-  console.log('Auth: JWT + Multi-tenant enabled');
-  console.log('Billing: Stripe enabled');
-  console.log('Email: Resend enabled');
-  console.log('Rate Limiting: Enabled');
-  console.log('========================================');
-});
 
 // Super Admin Leads CRM Routes
 app.get('/api/super-admin/leads', requireSuperAdmin, async (req, res) => {
@@ -1721,3 +1696,30 @@ app.get('/api/super-admin/leads/stats', requireSuperAdmin, async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch lead stats' });
   }
 });
+
+// ─── HANDLE 404 ROUTES ────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ message: `Route ${req.method} ${req.path} not found` });
+});
+
+// ─── HANDLE UNHANDLED PROMISE REJECTIONS ──────────────────
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err.message);
+  console.error(err.stack);
+});
+
+app.listen(PORT, () => {
+  console.log('========================================');
+  console.log(`Server running on port ${PORT}`);
+  console.log('Database: PostgreSQL (Helix8)');
+  console.log('Auth: JWT + Multi-tenant enabled');
+  console.log('Billing: Stripe enabled');
+  console.log('Email: Resend enabled');
+  console.log('Rate Limiting: Enabled');
+  console.log('========================================');
+});
+
