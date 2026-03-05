@@ -70,7 +70,7 @@ function BottomNav({ currentPage, setCurrentPage, userRole, onLogout }) {
         display: "none", position: "fixed", bottom: 0, left: 0, right: 0,
         backgroundColor: "#0a0f2c", borderTop: "1px solid #1e293b",
         zIndex: 999, height: "62px",
-        gridTemplateColumns: `repeat(${"{"}filteredMain.length + 1${"}"},  1fr)`,
+        gridTemplateColumns: "repeat(5, 1fr)",
       }} className="bottom-nav">
         {filteredMain.map(({ page, icon, label }) => (
           <button key={page} onClick={() => { setCurrentPage(page); setShowMore(false); }}
