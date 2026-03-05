@@ -304,6 +304,8 @@ function App() {
   };
 
   const handleLogout = () => {
+    window.history.pushState(null, "", window.location.href);
+    window.onpopstate = function() { window.history.pushState(null, "", window.location.href); };
     setUser(null); setCompany(null); setBillingStatus(null);
     setCurrentPage('dashboard');
     localStorage.removeItem('token');
