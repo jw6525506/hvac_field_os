@@ -741,7 +741,7 @@ function App() {
           </div>
         )}
 
-        <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} userRole={user.role} />
+        <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} userRole={user.role} onLogout={handleLogout} />
         <ErrorBoundary>{currentPage === 'customers' && <Customers />}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'workorders' && <WorkOrders />}</ErrorBoundary>
         {currentPage === 'invoices' && user.role !== 'technician' && <Invoices />}
