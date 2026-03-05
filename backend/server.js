@@ -1667,3 +1667,57 @@ app.listen(PORT, () => {
   console.log('Rate Limiting: Enabled');
   console.log('========================================');
 });
+
+// Super Admin Leads CRM Routes
+app.get('/api/super-admin/leads', requireSuperAdmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, industry, state, status, search } = req.query;
+    const offset = (page - 1) * limit;
+    
+    let where = [];
+    let params = [];
+    let i = 1;
+
+    if (industry) { where.push(`industry = $${i++}`); params.push(industry); }
+    if (state) { where.push(`state = $${i++}`); params.push(state); }
+    if (status) { where.push(`status = $${i++}`); params.push(status); }
+    if (search) { where.push(`("firstName" ILIKE $${i} OR "lastName" ILIKE $${i} OR company ILIKE $${i} OR city ILIKE $${i})`); params.push(`%${search}%`); i++; }
+
+    const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
+
+    const leads = await pool.query(`SELECT * FROM "Leads" ${whereClause} ORDER BY id DESC LIMIT $${i} OFFSET $${i+1}`, [...params, limit, offset]);
+    const count = await pool.query(`SELECT COUNT(*) FROM "Leads" ${whereClause}`, params);
+
+    res.json({ leads: leads.rows, total: parseInt(count.rows[0].count), page: parseInt(page), limit: parseInt(limit) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch leads' });
+  }
+});
+
+app.patch('/api/super-admin/leads/:id', requireSuperAdmin, async (req, res) => {
+  try {
+    const { status, notes } = req.body;
+    await pool.query('UPDATE "Leads" SET status=$1, notes=$2, "updatedAt"=NOW() WHERE id=$3', [status, notes, req.params.id]);
+    res.json({ message: 'Lead updated' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update lead' });
+  }
+});
+
+app.get('/api/super-admin/leads/stats', requireSuperAdmin, async (req, res) => {
+  try {
+    const total = await pool.query('SELECT COUNT(*) FROM "Leads"');
+    const byIndustry = await pool.query('SELECT industry, COUNT(*) as count FROM "Leads" GROUP BY industry ORDER BY count DESC');
+    const byState = await pool.query('SELECT state, COUNT(*) as count FROM "Leads" GROUP BY state ORDER BY count DESC');
+    const byStatus = await pool.query('SELECT status, COUNT(*) as count FROM "Leads" GROUP BY status ORDER BY count DESC');
+    res.json({
+      total: parseInt(total.rows[0].count),
+      byIndustry: byIndustry.rows,
+      byState: byState.rows,
+      byStatus: byStatus.rows
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch lead stats' });
+  }
+});
