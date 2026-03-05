@@ -70,13 +70,13 @@ function SuperAdmin() {
     }
   };
 
-  const loadDbLeads = async (page=1) => {
+  const loadDbLeads = async (page=1, search=dbSearch, industry=dbIndustry, state=dbState2) => {
     setDbLoading(true);
     try {
       const params = new URLSearchParams({ page, limit: 50 });
-      if (dbSearch) params.append('search', dbSearch);
-      if (dbIndustry) params.append('industry', dbIndustry);
-      if (dbState2) params.append('state', dbState2);
+      if (search) params.append('search', search);
+      if (industry) params.append('industry', industry);
+      if (state) params.append('state', state);
       const res = await fetch(API_BASE + '/super-admin/leads?' + params, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -388,7 +388,7 @@ function SuperAdmin() {
             </div>
             <div style={{display:'flex',gap:'10px',marginBottom:'16px',flexWrap:'wrap'}}>
               <input placeholder="Search name, company, city..." value={dbSearch} onChange={e=>setDbSearch(e.target.value)}
-                onKeyDown={e=>e.key==='Enter'&&loadDbLeads(1)}
+                onKeyDown={e=>e.key==='Enter'&&loadDbLeads(1, dbSearch, dbIndustry, dbState2)}
                 style={{padding:'10px 14px',backgroundColor:'#0a0f2c',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'8px',color:'white',fontSize:'14px',flex:1,minWidth:'200px'}}/>
               <select value={dbIndustry} onChange={e=>setDbIndustry(e.target.value)}
                 style={{padding:'10px',backgroundColor:'#0a0f2c',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'8px',color:'white',fontSize:'14px'}}>
@@ -403,7 +403,7 @@ function SuperAdmin() {
                 <option value="FL">Florida</option>
                 <option value="TX">Texas</option>
               </select>
-              <button onClick={()=>loadDbLeads(1)}
+              <button onClick={()=>loadDbLeads(1, dbSearch, dbIndustry, dbState2)}
                 style={{padding:'10px 20px',backgroundColor:'#06b6d4',color:'#0a0f2c',border:'none',borderRadius:'8px',fontWeight:'700',cursor:'pointer'}}>
                 Search
               </button>
