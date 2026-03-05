@@ -304,14 +304,25 @@ function App() {
   };
 
   const handleLogout = () => {
-    window.history.pushState(null, "", window.location.href);
-    window.onpopstate = function() { window.history.pushState(null, "", window.location.href); };
     setUser(null); setCompany(null); setBillingStatus(null);
     setCurrentPage('dashboard');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('company');
   };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setUser(null);
+        setCompany(null);
+        setCurrentPage("dashboard");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const handleSignupSuccess = (newUser, newCompany) => {
     if (newUser) {
