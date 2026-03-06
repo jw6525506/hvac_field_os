@@ -273,7 +273,7 @@ app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
     );
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}?reset=${token}`;
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'Helix8 <noreply@helix8.tech>',
       to: email,
       subject: 'Reset your Helix8 password',
       html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f0f4f8;font-family:Segoe UI,sans-serif;">
@@ -829,7 +829,7 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
 </body></html>`;
 
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'Helix8 <noreply@helix8.tech>',
       to: inv.customerEmail,
       subject: `Invoice ${inv.invoiceNumber} from ${inv.companyName} — $${parseFloat(inv.total).toFixed(2)}`,
       html: emailHtml,
@@ -857,7 +857,7 @@ app.post('/api/contact', async (req, res) => {
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
-      from: 'Helix8 Contact <onboarding@resend.dev>',
+      from: 'Helix8 <noreply@helix8.tech>',
       to: 'Washington.j3@icloud.com',
       subject: `New Contact Form: ${name} from ${company || 'Unknown Company'}`,
       html: `
@@ -1237,7 +1237,7 @@ app.post('/api/auth/2fa/send', async (req, res) => {
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
-      from: 'Helix8 <onboarding@resend.dev>',
+      from: 'Helix8 <noreply@helix8.tech>',
       to: user.email,
       subject: 'Your Helix8 Login Code',
       html: `
