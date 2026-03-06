@@ -311,6 +311,26 @@ function App() {
     localStorage.removeItem('company');
   };
 
+  // Auto logout after 30 minutes of inactivity
+  useEffect(() => {
+    if (!user) return;
+    let timer;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        handleLogout();
+        alert('You have been logged out due to inactivity.');
+      }, 30 * 60 * 1000); // 30 minutes
+    };
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(e => window.addEventListener(e, reset));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach(e => window.removeEventListener(e, reset));
+    };
+  }, [user]);
+
   useEffect(() => {
     const handlePopState = () => {
       const token = localStorage.getItem("token");
