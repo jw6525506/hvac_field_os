@@ -6,8 +6,8 @@ const { Pool } = require('pg');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const multer = require('multer');
 const helmet = require('helmet');
 const { body, validationResult } = require('express-validator');
@@ -272,7 +272,7 @@ app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
       [email, token, expiresAt]
     );
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}?reset=${token}`;
-    await resend.emails.send({
+    await sgMail.send({
       from: 'Helix8 <noreply@helix8.tech>',
       to: email,
       subject: 'Reset your Helix8 password',
@@ -828,7 +828,7 @@ app.post('/api/invoices/:id/email', requireAuth, async (req, res) => {
 </div>
 </body></html>`;
 
-    await resend.emails.send({
+    await sgMail.send({
       from: 'Helix8 <noreply@helix8.tech>',
       to: inv.customerEmail,
       subject: `Invoice ${inv.invoiceNumber} from ${inv.companyName} — $${parseFloat(inv.total).toFixed(2)}`,
@@ -856,7 +856,7 @@ app.post('/api/contact', async (req, res) => {
   try {
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
+    await sgMail.send({
       from: 'Helix8 <noreply@helix8.tech>',
       to: 'Washington.j3@icloud.com',
       subject: `New Contact Form: ${name} from ${company || 'Unknown Company'}`,
@@ -1236,7 +1236,7 @@ app.post('/api/auth/2fa/send', async (req, res) => {
 
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
+    await sgMail.send({
       from: 'Helix8 <noreply@helix8.tech>',
       to: user.email,
       subject: 'Your Helix8 Login Code',
