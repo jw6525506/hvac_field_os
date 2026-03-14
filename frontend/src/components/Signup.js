@@ -97,7 +97,7 @@ function Signup({ onSignupSuccess }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0a0f2c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Segoe UI, sans-serif', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0a0f2c', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', fontFamily: 'Segoe UI, sans-serif', padding: '20px', overflowY: 'auto' }}>
       <div style={{ width: '100%', maxWidth: '480px' }}>
 
         {/* Logo */}
@@ -123,7 +123,7 @@ function Signup({ onSignupSuccess }) {
           ))}
         </div>
 
-        <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '36px', border: '1px solid #334155' }}>
+        <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '24px', border: '1px solid #334155' }}>
 
           {/* Step 1 - Company Info */}
           {step === 1 && (
