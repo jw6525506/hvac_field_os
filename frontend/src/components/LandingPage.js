@@ -142,7 +142,7 @@ function LandingPage({ onLogin, onSignup }) {
           </div>
           <div className="hero-stats">
             <div className="stat"><div className="stat-num">14</div><div className="stat-label">Day free trial</div></div>
-            <div className="stat"><div className="stat-num">$79</div><div className="stat-label">Starting per month</div></div>
+            <div className="stat"><div className="stat-num">$99</div><div className="stat-label">Starting per month</div></div>
             <div className="stat"><div className="stat-num">0</div><div className="stat-label">Setup fees</div></div>
           </div>
         </div>
@@ -200,9 +200,9 @@ function LandingPage({ onLogin, onSignup }) {
           <p className="section-sub">One flat monthly price for your whole company. Cancel anytime.</p>
           <div className="pricing-grid">
             {[
-              {name:"Basic", price:"$79", features:["Up to 3 users","Customers & Work Orders","Invoicing & Email","Photo uploads","Email support"], btn:"btn-plan-outline", popular:false},
-              {name:"Pro", price:"$149", features:["Unlimited users","Everything in Basic","Job map view","Advanced dashboard","Priority support"], btn:"btn-plan-filled", popular:true},
-              {name:"Enterprise", price:"$299", features:["Everything in Pro","Multi-location ready","CSV bulk import","Dedicated support","SLA guarantee"], btn:"btn-plan-outline", popular:false},
+              {name:"Basic", price:"$99", features:["Unlimited users","Work Orders & Scheduling","Invoicing & Estimates","Expense Tracking","Digital Signatures","Photo Uploads","Email Support"], btn:"btn-plan-outline", popular:false},
+              {name:"Pro", price:"$179", features:["Everything in Basic","Maintenance Plans","Inventory Management","Payroll & Time Clock","Equipment Manuals","Financial Reports","Advanced Tech Reports","Priority Support"], btn:"btn-plan-filled", popular:true},
+              {name:"Enterprise", price:"$349", features:["Everything in Pro","Multi-Location Support","Custom Branding","Dedicated Onboarding","CSV Bulk Import","SLA Guarantee","Dedicated Account Manager"], btn:"btn-plan-outline", popular:false},
             ].map((plan,i) => (
               <div className={"pricing-card" + (plan.popular ? " popular" : "")} key={i}>
                 {plan.popular && <div className="popular-badge">Most Popular</div>}

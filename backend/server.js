@@ -325,9 +325,9 @@ app.post('/api/auth/reset-password', async (req, res) => {
 app.get('/api/billing/plans', (req, res) => {
   res.json({
     plans: [
-      { id: 'basic', name: 'Basic', price: 79, priceId: process.env.BASIC_PRICE_ID, description: 'Everything you need to get started', features: ['Up to 3 users', 'Customers & Work Orders', 'Invoicing', 'Email support'] },
-      { id: 'pro', name: 'Pro', price: 149, priceId: process.env.PRO_PRICE_ID, description: 'Scale your operation with confidence', features: ['Unlimited users', 'All Basic features', 'Advanced dashboard', 'Priority support'], popular: true },
-      { id: 'enterprise', name: 'Enterprise', price: 299, priceId: process.env.ENTERPRISE_PRICE_ID, description: 'Built for high-volume teams', features: ['Everything in Pro', 'Custom integrations', 'Dedicated support', 'SLA guarantee'] },
+      { id: 'basic', name: 'Basic', price: 99, priceId: process.env.BASIC_PRICE_ID, description: 'Everything you need to run your business', features: ['Unlimited users', 'Work Orders & Scheduling', 'Invoicing & Estimates', 'Expense Tracking', 'Digital Signatures', 'Photo Uploads', 'Email support'] },
+      { id: 'pro', name: 'Pro', price: 179, priceId: process.env.PRO_PRICE_ID, description: 'Scale your operation with confidence', features: ['Everything in Basic', 'Maintenance Plans', 'Inventory Management', 'Payroll & Time Clock', 'Financial Reports', 'Advanced Tech Reports', 'Priority support'], popular: true },
+      { id: 'enterprise', name: 'Enterprise', price: 349, priceId: process.env.ENTERPRISE_PRICE_ID, description: 'Built for high-volume teams', features: ['Everything in Pro', 'Multi-Location Support', 'Custom Branding', 'Dedicated Onboarding', 'SLA guarantee', 'Dedicated Account Manager'] },
     ],
   });
 });
@@ -1383,7 +1383,7 @@ app.get('/api/super-admin/stats', requireSuperAdmin, async (req, res) => {
     const totalRevenue = companies.rows.reduce((sum, c) => sum + parseFloat(c.totalRevenue), 0);
 
     // MRR based on subscription plan
-    const planPrices = { basic: 79, pro: 149, enterprise: 299 };
+    const planPrices = { basic: 99, pro: 179, enterprise: 349 };
     const subs = await pool.query('SELECT * FROM "Subscriptions"');
     const mrr = subs.rows.reduce((sum, s) => {
       if (s.status === 'active' || s.status === 'trialing') {
