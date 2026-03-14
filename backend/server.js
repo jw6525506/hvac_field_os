@@ -1698,6 +1698,111 @@ app.get('/api/super-admin/leads/stats', requireSuperAdmin, async (req, res) => {
 });
 
 // ─── HANDLE 404 ROUTES ────────────────────────────────────
+
+// ─── EXPENSES ─────────────────────────────────────────────────────
+app.get('/api/expenses', authenticateToken, async (req, res) => {
+  try {
+    const { month, year, category } = req.query;
+    let query = `SELECT * FROM "Expenses" WHERE "companyId" = $1`;
+    let params = [req.user.companyId];
+    if (month && year) {
+      params.push(year, month);
+      query += ` AND EXTRACT(YEAR FROM date) = $${params.length-1} AND EXTRACT(MONTH FROM date) = $${params.length}`;
+    }
+    if (category) { params.push(category); query += ` AND category = $${params.length}`; }
+    query += ` ORDER BY date DESC`;
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+app.post('/api/expenses', authenticateToken, async (req, res) => {
+  try {
+    const { date, category, description, amount, vendor, notes } = req.body;
+    const result = await pool.query(
+      `INSERT INTO "Expenses" ("companyId", date, category, description, amount, vendor, notes, "createdAt", "updatedAt")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,NOW(),NOW()) RETURNING *`,
+      [req.user.companyId, date, category, description, amount, vendor || null, notes || null]
+    );
+    res.json(result.rows[0]);
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+app.put('/api/expenses/:id', authenticateToken, async (req, res) => {
+  try {
+    const { date, category, description, amount, vendor, notes } = req.body;
+    const result = await pool.query(
+      `UPDATE "Expenses" SET date=$1, category=$2, description=$3, amount=$4, vendor=$5, notes=$6, "updatedAt"=NOW()
+       WHERE id=$7 AND "companyId"=$8 RETURNING *`,
+      [date, category, description, amount, vendor || null, notes || null, req.params.id, req.user.companyId]
+    );
+    if (!result.rows[0]) return res.status(404).json({ message: 'Not found' });
+    res.json(result.rows[0]);
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+app.delete('/api/expenses/:id', authenticateToken, async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM "Expenses" WHERE id=$1 AND "companyId"=$2`, [req.params.id, req.user.companyId]);
+    res.json({ message: 'Deleted' });
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+// ─── FINANCIAL REPORT ─────────────────────────────────────────────
+app.get('/api/reports/financial', authenticateToken, async (req, res) => {
+  try {
+    const { year } = req.query;
+    const y = year || new Date().getFullYear();
+    const companyId = req.user.companyId;
+
+    // Monthly revenue from invoices
+    const revenueResult = await pool.query(`
+      SELECT EXTRACT(MONTH FROM "createdAt") as month, SUM(total::numeric) as revenue
+      FROM "Invoices" WHERE "companyId"=$1 AND EXTRACT(YEAR FROM "createdAt")=$2
+      AND status='paid' GROUP BY month ORDER BY month`, [companyId, y]);
+
+    // Monthly expenses
+    const expenseResult = await pool.query(`
+      SELECT EXTRACT(MONTH FROM date) as month, SUM(amount) as expenses, category
+      FROM "Expenses" WHERE "companyId"=$1 AND EXTRACT(YEAR FROM date)=$2
+      GROUP BY month, category ORDER BY month`, [companyId, y]);
+
+    // Expense by category totals
+    const categoryResult = await pool.query(`
+      SELECT category, SUM(amount) as total
+      FROM "Expenses" WHERE "companyId"=$1 AND EXTRACT(YEAR FROM date)=$2
+      GROUP BY category ORDER BY total DESC`, [companyId, y]);
+
+    // Total revenue and expenses
+    const totalRevenue = revenueResult.rows.reduce((sum, r) => sum + parseFloat(r.revenue || 0), 0);
+    const totalExpenses = expenseResult.rows.reduce((sum, r) => sum + parseFloat(r.expenses || 0), 0);
+
+    // Build monthly summary
+    const months = Array.from({length: 12}, (_, i) => {
+      const rev = revenueResult.rows.find(r => parseInt(r.month) === i+1);
+      const exp = expenseResult.rows.filter(r => parseInt(r.month) === i+1);
+      const totalExp = exp.reduce((sum, e) => sum + parseFloat(e.expenses || 0), 0);
+      return {
+        month: i+1,
+        revenue: parseFloat(rev?.revenue || 0),
+        expenses: totalExp,
+        profit: parseFloat(rev?.revenue || 0) - totalExp
+      };
+    });
+
+    res.json({
+      year: y,
+      totalRevenue,
+      totalExpenses,
+      netProfit: totalRevenue - totalExpenses,
+      profitMargin: totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue * 100).toFixed(1) : 0,
+      monthly: months,
+      byCategory: categoryResult.rows
+    });
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+
 app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.method} ${req.path} not found` });
 });
