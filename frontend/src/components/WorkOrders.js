@@ -311,6 +311,7 @@ export default function WorkOrders() {
 
   return (
     <div style={S.page}>
+      {SigModal}
       <div style={S.header}>
         <h1 style={S.title}>Work Orders</h1>
         <button style={S.addBtn} onClick={openCreate}>+ Create Work Order</button>
