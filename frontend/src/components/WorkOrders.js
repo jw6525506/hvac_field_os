@@ -191,6 +191,58 @@ export default function WorkOrders() {
     }
   };
 
+  const [sigTarget, setSigTarget] = React.useState(null);
+  const [sigName, setSigName] = React.useState('');
+  const [sigDrawing, setSigDrawing] = React.useState(false);
+  const sigCanvasRef = React.useRef(null);
+
+  const startSig = (e, canvas) => {
+    setSigDrawing(true);
+    const rect = canvas.getBoundingClientRect();
+    const ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    ctx.moveTo(x, y);
+  };
+
+  const drawSig = (e, canvas) => {
+    if (!sigDrawing) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#0a0f2c';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const clearSig = () => {
+    const canvas = sigCanvasRef.current;
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const submitSignature = async () => {
+    if (!sigName.trim()) return alert('Please enter customer name');
+    const canvas = sigCanvasRef.current;
+    if (!canvas) return;
+    const signatureData = canvas.toDataURL('image/png');
+    try {
+      const res = await fetch(`${API_BASE}/workorders/${sigTarget.id}/sign`, {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ signatureData, signedBy: sigName })
+      });
+      if (!res.ok) throw new Error('Failed to save signature');
+      setWorkOrders(prev => prev.map(wo => wo.id === sigTarget.id ? { ...wo, signedBy: sigName, signedAt: new Date() } : wo));
+      setSigTarget(null);
+      setSigName('');
+      alert('Signature saved successfully!');
+    } catch (e) { alert('Error saving signature'); }
+  };
+
   const handleStatusUpdate = async (id, status) => {
     try {
       const res = await fetch(`${API_BASE}/work-orders/${id}/status`, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ status }) });
@@ -224,6 +276,38 @@ export default function WorkOrders() {
     const c = customers.find(c => c.id === wo.customerId);
     return c ? `${c.firstName} ${c.lastName}` : 'Unknown Customer';
   };
+
+  const SigModal = sigTarget && (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+      <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px' }}>
+        <h3 style={{ margin: '0 0 16px', color: '#0a0f2c' }}>✍️ Customer Signature</h3>
+        <p style={{ margin: '0 0 8px', fontSize: '14px', color: '#64748b' }}>Work Order: {sigTarget.title}</p>
+        <input
+          placeholder="Customer full name *"
+          value={sigName}
+          onChange={e => setSigName(e.target.value)}
+          style={{ width: '100%', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '12px', fontSize: '14px', boxSizing: 'border-box' }}
+        />
+        <p style={{ margin: '0 0 8px', fontSize: '13px', color: '#64748b' }}>Sign below:</p>
+        <canvas
+          ref={sigCanvasRef}
+          width={430} height={150}
+          style={{ border: '2px solid #e2e8f0', borderRadius: '8px', cursor: 'crosshair', touchAction: 'none', width: '100%', background: '#f8fafc' }}
+          onMouseDown={e => startSig(e, sigCanvasRef.current)}
+          onMouseMove={e => drawSig(e, sigCanvasRef.current)}
+          onMouseUp={() => setSigDrawing(false)}
+          onTouchStart={e => startSig(e, sigCanvasRef.current)}
+          onTouchMove={e => drawSig(e, sigCanvasRef.current)}
+          onTouchEnd={() => setSigDrawing(false)}
+        />
+        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+          <button onClick={submitSignature} style={{ flex: 1, padding: '10px', background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>Save Signature</button>
+          <button onClick={clearSig} style={{ padding: '10px 16px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Clear</button>
+          <button onClick={() => setSigTarget(null)} style={{ padding: '10px 16px', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={S.page}>
@@ -271,12 +355,17 @@ export default function WorkOrders() {
                     style={{ padding: '7px 14px', backgroundColor: '#f0fdf4', color: '#15803d', border: '1px solid #86efac', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
                     📷 {wo.photos && wo.photos.length > 0 ? `Photos (${wo.photos.length})` : t('photos')}
                   </button>
+                  <button onClick={() => { setSigTarget(wo); setSigName(''); }}
+                    style={{ padding: '7px 14px', backgroundColor: wo.signedBy ? '#f0fdf4' : '#eff6ff', color: wo.signedBy ? '#15803d' : '#1d4ed8', border: `1px solid ${wo.signedBy ? '#86efac' : '#93c5fd'}`, borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+                    {wo.signedBy ? '✅ Signed' : '✍️ Sign'}
+                  </button>
                   <button style={S.deleteBtn} onClick={() => setDeleteTarget(wo)}>Delete</button>
                 </div>
               </div>
               <div style={S.cardBottom}>
                 <span style={S.badge(statusCfg.color, statusCfg.bg)}>{statusCfg.label}</span>
                 <span style={S.badge(priorityCfg.color, priorityCfg.bg)}>{priorityCfg.label} Priority</span>
+                {wo.signedBy && <span style={{...S.badge('#15803d','#dcfce7')}}>✅ Signed by {wo.signedBy}</span>}
                 {wo.scheduledDate && <span style={S.metaItem}>📅 {new Date(wo.scheduledDate).toLocaleDateString()}</span>}
                 {wo.scheduledTime && <span style={S.metaItem}>🕐 {wo.scheduledTime}</span>}
                 {statusCfg.next && (

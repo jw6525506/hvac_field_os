@@ -24,6 +24,7 @@ import PaymentPage from './components/PaymentPage';
 import Payroll from './components/Payroll';
 import Inventory from './components/Inventory';
 import Expenses from './components/Expenses';
+import Reports from './components/Reports';
 import BottomNav from './components/BottomNav';
 
 const API_BASE = 'https://hvacfieldos-production.up.railway.app/api';
@@ -536,6 +537,7 @@ function App() {
     { page: 'inventory', icon: '📦', label: t('inventory') },
     { page: 'payroll', icon: '💰', label: 'Payroll' },
     { page: 'expenses', icon: '📊', label: 'Expenses' },
+    { page: 'reports', icon: '📈', label: 'Reports' },
     { page: 'estimates', icon: '📋', label: 'Estimates' },
     { page: 'maintenance', icon: '🔧', label: 'Maintenance' },
     { page: 'manuals', icon: '📚', label: 'Manuals' },
@@ -788,6 +790,7 @@ function App() {
         <ErrorBoundary>{currentPage === 'manuals' && <Manuals user={user} />}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'payroll' && <Payroll token={localStorage.getItem('token')} user={user} />}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'expenses' && <Expenses token={localStorage.getItem('token')} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'reports' && <Reports token={localStorage.getItem('token')} />}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'settings' && <Settings />}</ErrorBoundary>
         {currentPage === 'users' && user.role === 'admin' && <Users />}
       </div>

@@ -1803,6 +1803,103 @@ app.get('/api/reports/financial', requireAuth, async (req, res) => {
 });
 
 
+
+// ─── DIGITAL SIGNATURES ───────────────────────────────────────────
+app.post('/api/workorders/:id/sign', requireAuth, async (req, res) => {
+  try {
+    const { signatureData, signedBy } = req.body;
+    if (!signatureData || !signedBy) return res.status(400).json({ message: 'Signature and name required' });
+    const result = await pool.query(
+      `UPDATE "WorkOrders" SET "signatureData"=$1, "signedBy"=$2, "signedAt"=NOW(), "updatedAt"=NOW()
+       WHERE id=$3 AND "companyId"=$4 RETURNING *`,
+      [signatureData, signedBy, req.params.id, req.user.companyId]
+    );
+    if (!result.rows[0]) return res.status(404).json({ message: 'Work order not found' });
+    res.json(result.rows[0]);
+  } catch (err) { console.error('Sign workorder error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+app.post('/api/estimates/:id/sign', requireAuth, async (req, res) => {
+  try {
+    const { signatureData, signedBy } = req.body;
+    if (!signatureData || !signedBy) return res.status(400).json({ message: 'Signature and name required' });
+    const result = await pool.query(
+      `UPDATE "Estimates" SET "signatureData"=$1, "signedBy"=$2, "signedAt"=NOW(), status='approved', "updatedAt"=NOW()
+       WHERE id=$3 AND "companyId"=$4 RETURNING *`,
+      [signatureData, signedBy, req.params.id, req.user.companyId]
+    );
+    if (!result.rows[0]) return res.status(404).json({ message: 'Estimate not found' });
+    res.json(result.rows[0]);
+  } catch (err) { console.error('Sign estimate error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+// ─── ADVANCED REPORTING ───────────────────────────────────────────
+app.get('/api/reports/technicians', requireAuth, async (req, res) => {
+  try {
+    const { year, month } = req.query;
+    const companyId = req.user.companyId;
+    let dateFilter = `EXTRACT(YEAR FROM wo."createdAt") = ${year || new Date().getFullYear()}`;
+    if (month) dateFilter += ` AND EXTRACT(MONTH FROM wo."createdAt") = ${month}`;
+
+    const result = await pool.query(`
+      SELECT 
+        u.id,
+        u."firstName" || ' ' || u."lastName" as name,
+        COUNT(wo.id) as total_jobs,
+        COUNT(CASE WHEN wo.status = 'completed' THEN 1 END) as completed_jobs,
+        COALESCE(SUM(inv.total::numeric), 0) as total_revenue,
+        COALESCE(SUM(te."totalMinutes"), 0) as total_minutes,
+        ROUND(AVG(CASE WHEN wo.status = 'completed' THEN 1 ELSE 0 END) * 100, 1) as completion_rate
+      FROM "Users" u
+      LEFT JOIN "WorkOrders" wo ON wo."assignedTo" = u.id AND wo."companyId" = $1 AND ${dateFilter}
+      LEFT JOIN "Invoices" inv ON inv."customerId" = wo."customerId" AND inv."companyId" = $1 AND inv.status = 'paid'
+      LEFT JOIN "TimeEntries" te ON te."userId" = u.id AND te."companyId" = $1
+      WHERE u."companyId" = $1
+      GROUP BY u.id, u."firstName", u."lastName"
+      ORDER BY total_revenue DESC
+    `, [companyId]);
+
+    res.json(result.rows);
+  } catch (err) { console.error('Tech report error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+app.get('/api/reports/jobs', requireAuth, async (req, res) => {
+  try {
+    const { year, month } = req.query;
+    const companyId = req.user.companyId;
+    let dateFilter = `EXTRACT(YEAR FROM "createdAt") = ${year || new Date().getFullYear()}`;
+    if (month) dateFilter += ` AND EXTRACT(MONTH FROM "createdAt") = ${month}`;
+
+    const byType = await pool.query(`
+      SELECT "jobType", COUNT(*) as count, 
+      COUNT(CASE WHEN status='completed' THEN 1 END) as completed
+      FROM "WorkOrders" WHERE "companyId"=$1 AND ${dateFilter}
+      GROUP BY "jobType" ORDER BY count DESC
+    `, [companyId]);
+
+    const byStatus = await pool.query(`
+      SELECT status, COUNT(*) as count
+      FROM "WorkOrders" WHERE "companyId"=$1 AND ${dateFilter}
+      GROUP BY status
+    `, [companyId]);
+
+    const topCustomers = await pool.query(`
+      SELECT c."firstName" || ' ' || c."lastName" as name,
+        COUNT(wo.id) as jobs,
+        COALESCE(SUM(inv.total::numeric), 0) as revenue
+      FROM "Customers" c
+      LEFT JOIN "WorkOrders" wo ON wo."customerId" = c.id AND wo."companyId" = $1
+      LEFT JOIN "Invoices" inv ON inv."customerId" = c.id AND inv."companyId" = $1 AND inv.status = 'paid'
+      WHERE c."companyId" = $1
+      GROUP BY c.id, c."firstName", c."lastName"
+      ORDER BY revenue DESC LIMIT 10
+    `, [companyId]);
+
+    res.json({ byType: byType.rows, byStatus: byStatus.rows, topCustomers: topCustomers.rows });
+  } catch (err) { console.error('Jobs report error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+
 app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.method} ${req.path} not found` });
 });
