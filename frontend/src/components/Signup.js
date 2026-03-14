@@ -29,9 +29,6 @@ function Signup({ onSignupSuccess }) {
     e.preventDefault();
     const errors = validateForm(form, {
       companyName: [v => validators.required(v, 'Company name')],
-      lastName: [v => validators.required(v, 'Last name')],
-      email: [v => validators.required(v, 'Email'), v => validators.email(v)],
-      password: [v => validators.password(v)],
     });
     if (hasErrors(errors)) { setError(Object.values(errors)[0]); return; }
     setError('');
