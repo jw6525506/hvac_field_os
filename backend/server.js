@@ -1700,7 +1700,7 @@ app.get('/api/super-admin/leads/stats', requireSuperAdmin, async (req, res) => {
 // ─── HANDLE 404 ROUTES ────────────────────────────────────
 
 // ─── EXPENSES ─────────────────────────────────────────────────────
-app.get('/api/expenses', authenticateToken, async (req, res) => {
+app.get('/api/expenses', requireAuth, async (req, res) => {
   try {
     const { month, year, category } = req.query;
     let query = `SELECT * FROM "Expenses" WHERE "companyId" = $1`;
@@ -1716,7 +1716,7 @@ app.get('/api/expenses', authenticateToken, async (req, res) => {
   } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-app.post('/api/expenses', authenticateToken, async (req, res) => {
+app.post('/api/expenses', requireAuth, async (req, res) => {
   try {
     const { date, category, description, amount, vendor, notes } = req.body;
     const result = await pool.query(
@@ -1728,7 +1728,7 @@ app.post('/api/expenses', authenticateToken, async (req, res) => {
   } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-app.put('/api/expenses/:id', authenticateToken, async (req, res) => {
+app.put('/api/expenses/:id', requireAuth, async (req, res) => {
   try {
     const { date, category, description, amount, vendor, notes } = req.body;
     const result = await pool.query(
@@ -1741,7 +1741,7 @@ app.put('/api/expenses/:id', authenticateToken, async (req, res) => {
   } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-app.delete('/api/expenses/:id', authenticateToken, async (req, res) => {
+app.delete('/api/expenses/:id', requireAuth, async (req, res) => {
   try {
     await pool.query(`DELETE FROM "Expenses" WHERE id=$1 AND "companyId"=$2`, [req.params.id, req.user.companyId]);
     res.json({ message: 'Deleted' });
@@ -1749,7 +1749,7 @@ app.delete('/api/expenses/:id', authenticateToken, async (req, res) => {
 });
 
 // ─── FINANCIAL REPORT ─────────────────────────────────────────────
-app.get('/api/reports/financial', authenticateToken, async (req, res) => {
+app.get('/api/reports/financial', requireAuth, async (req, res) => {
   try {
     const { year } = req.query;
     const y = year || new Date().getFullYear();
