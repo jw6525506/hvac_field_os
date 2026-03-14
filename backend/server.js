@@ -1900,6 +1900,70 @@ app.get('/api/reports/jobs', requireAuth, async (req, res) => {
 });
 
 
+
+// ─── LOCATIONS ────────────────────────────────────────────────────
+app.get('/api/locations', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT l.*, 
+        COUNT(DISTINCT u.id) as user_count,
+        COUNT(DISTINCT wo.id) as job_count
+       FROM "Locations" l
+       LEFT JOIN "Users" u ON u."locationId" = l.id
+       LEFT JOIN "WorkOrders" wo ON wo."locationId" = l.id
+       WHERE l."companyId" = $1
+       GROUP BY l.id ORDER BY l."createdAt" ASC`,
+      [req.user.companyId]
+    );
+    res.json(result.rows);
+  } catch (err) { console.error('Get locations error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+app.post('/api/locations', requireAuth, async (req, res) => {
+  try {
+    const { name, address, city, state, zip, phone, email, managerName } = req.body;
+    if (!name) return res.status(400).json({ message: 'Location name required' });
+    const result = await pool.query(
+      `INSERT INTO "Locations" ("companyId", name, address, city, state, zip, phone, email, "managerName", "createdAt", "updatedAt")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW()) RETURNING *`,
+      [req.user.companyId, name, address||null, city||null, state||null, zip||null, phone||null, email||null, managerName||null]
+    );
+    res.json(result.rows[0]);
+  } catch (err) { console.error('Create location error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+app.put('/api/locations/:id', requireAuth, async (req, res) => {
+  try {
+    const { name, address, city, state, zip, phone, email, managerName, active } = req.body;
+    const result = await pool.query(
+      `UPDATE "Locations" SET name=$1, address=$2, city=$3, state=$4, zip=$5, phone=$6, email=$7, "managerName"=$8, active=$9, "updatedAt"=NOW()
+       WHERE id=$10 AND "companyId"=$11 RETURNING *`,
+      [name, address||null, city||null, state||null, zip||null, phone||null, email||null, managerName||null, active !== false, req.params.id, req.user.companyId]
+    );
+    if (!result.rows[0]) return res.status(404).json({ message: 'Location not found' });
+    res.json(result.rows[0]);
+  } catch (err) { console.error('Update location error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+app.delete('/api/locations/:id', requireAuth, async (req, res) => {
+  try {
+    await pool.query(`UPDATE "Locations" SET active=false, "updatedAt"=NOW() WHERE id=$1 AND "companyId"=$2`, [req.params.id, req.user.companyId]);
+    res.json({ message: 'Location deactivated' });
+  } catch (err) { console.error('Delete location error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+app.get('/api/locations/:id/stats', requireAuth, async (req, res) => {
+  try {
+    const companyId = req.user.companyId;
+    const locId = req.params.id;
+    const jobs = await pool.query(`SELECT COUNT(*) as total, COUNT(CASE WHEN status='completed' THEN 1 END) as completed FROM "WorkOrders" WHERE "companyId"=$1 AND "locationId"=$2`, [companyId, locId]);
+    const revenue = await pool.query(`SELECT COALESCE(SUM(total::numeric),0) as total FROM "Invoices" WHERE "companyId"=$1 AND status='paid' AND "customerId" IN (SELECT id FROM "Customers" WHERE "locationId"=$2)`, [companyId, locId]);
+    const staff = await pool.query(`SELECT COUNT(*) as total FROM "Users" WHERE "companyId"=$1 AND "locationId"=$2`, [companyId, locId]);
+    res.json({ jobs: jobs.rows[0], revenue: revenue.rows[0], staff: staff.rows[0] });
+  } catch (err) { console.error('Location stats error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+
 app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.method} ${req.path} not found` });
 });
