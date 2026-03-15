@@ -351,6 +351,7 @@ function LandingPage({ onLogin, onSignup }) {
                 <div className="plan-period">/month · 14-day free trial</div>
                 <ul className="plan-features">{plan.features.map((f,j) => <li key={j}>{f}</li>)}</ul>
                 <button className={"btn-plan " + plan.btn} onClick={onSignup}>Start Free Trial</button>
+                <button onClick={onSignup} style={{width:'100%',padding:'12px',marginTop:'8px',background:'transparent',color:'#06b6d4',border:'1px solid rgba(6,182,212,0.4)',borderRadius:'8px',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'all 0.2s'}}>Buy Now — No Trial</button>
               </div>
             ))}
           </div>
