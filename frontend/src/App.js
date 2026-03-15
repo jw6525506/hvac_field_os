@@ -610,10 +610,10 @@ function App() {
           {navItems.filter(item => {
               if (user.role === 'technician') return ['workorders', 'map'].includes(item.page);
               return item.page !== 'users' || user.role === 'admin';
-            }).map(({ page, icon, label }) => (
-            <button key={page} onClick={() => setCurrentPage(page)}
-              style={{ width: '100%', padding: '11px 14px', marginBottom: '4px', backgroundColor: currentPage === page ? '#1e40af' : 'transparent', color: currentPage === page ? 'white' : (item.pro && !canAccess(page)) ? '#475569' : '#94a3b8', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'space-between' }}>
-              <span>{icon}</span> {label}
+            }).map((item) => (
+            <button key={item.page} onClick={() => setCurrentPage(item.page)}
+              style={{ width: '100%', padding: '11px 14px', marginBottom: '4px', backgroundColor: currentPage === item.page ? '#1e40af' : 'transparent', color: currentPage === item.page ? 'white' : (item.pro && !canAccess(item.page)) ? '#475569' : '#94a3b8', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'space-between' }}>
+              <span>{item.icon}</span> {item.label}{item.pro && !canAccess(item.page) && <span style={{fontSize:'10px',color:'#475569'}}>🔒</span>}
             </button>
           ))}
         </nav>
