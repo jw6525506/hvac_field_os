@@ -239,8 +239,8 @@ function LandingPage({ onLogin, onSignup }) {
             <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr',background:'#0d1426'}}>
               <div style={{padding:'16px 20px',fontWeight:700,fontSize:'14px',color:'#64748b'}}></div>
               <div style={{padding:'16px 20px',textAlign:'center',fontWeight:800,fontSize:'16px',color:'#06b6d4',background:'rgba(6,182,212,0.1)',borderBottom:'2px solid #06b6d4'}}>Helix8</div>
-              <div style={{padding:'16px 20px',textAlign:'center',fontWeight:700,fontSize:'14px',color:'#64748b'}}>Big Software</div>
-              <div style={{padding:'16px 20px',textAlign:'center',fontWeight:700,fontSize:'14px',color:'#64748b'}}>Other Software</div>
+              <div style={{padding:'16px 20px',textAlign:'center',fontWeight:700,fontSize:'14px',color:'#64748b'}}>$300-600/user/mo</div>
+              <div style={{padding:'16px 20px',textAlign:'center',fontWeight:700,fontSize:'14px',color:'#64748b'}}>$200-350/user/mo</div>
             </div>
             {[['Monthly Price','$99 flat','$300-600/user','$200-350/user'],['Unlimited Users',true,false,false],['Digital Signatures',true,true,true],['Tax Center / Schedule C',true,false,false],['1099 Contractor Tracking',true,false,false],['Mileage Log',true,false,false],['Multi-Location Support',true,true,false],['Full Spanish UI',true,false,false],['No Setup Fees',true,false,false],['14-Day Free Trial',true,false,true]].map(([f,h,e,m],i)=>(
               <div key={f} style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr',background:i%2===0?'rgba(255,255,255,0.01)':'transparent',borderTop:'1px solid rgba(255,255,255,0.04)'}}>
