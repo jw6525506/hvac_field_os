@@ -529,6 +529,31 @@ function App() {
   );
 
   const isTech = user && user.role === 'technician';
+  const plan = billingStatus?.plan || 'trial';
+  const isActive = billingStatus?.active !== false;
+
+  // Plan feature access
+  const PLAN_FEATURES = {
+    trial:      ['dashboard','customers','workorders','invoices','estimates','expenses','map','billing','settings','users','taxcenter'],
+    basic:      ['dashboard','customers','workorders','invoices','estimates','expenses','map','billing','settings','users','taxcenter'],
+    pro:        ['dashboard','customers','workorders','invoices','estimates','expenses','map','billing','settings','users','taxcenter','inventory','payroll','maintenance','manuals','reports','locations'],
+    enterprise: ['dashboard','customers','workorders','invoices','estimates','expenses','map','billing','settings','users','taxcenter','inventory','payroll','maintenance','manuals','reports','locations'],
+  };
+
+  const canAccess = (page) => {
+    if (isTech) return ['workorders','map'].includes(page);
+    const allowed = PLAN_FEATURES[plan] || PLAN_FEATURES['trial'];
+    return allowed.includes(page);
+  };
+
+  const UpgradePrompt = ({ feature, requiredPlan }) => (
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'60vh',textAlign:'center',padding:'40px'}}>
+      <div style={{fontSize:'48px',marginBottom:'16px'}}>🔒</div>
+      <h2 style={{fontFamily:"'Syne',sans-serif",fontSize:'24px',fontWeight:800,color:'white',margin:'0 0 12px'}}>{feature} is a {requiredPlan} feature</h2>
+      <p style={{color:'#94a3b8',fontSize:'16px',margin:'0 0 28px',maxWidth:'400px'}}>Upgrade your plan to unlock {feature} and all other {requiredPlan} features.</p>
+      <button onClick={() => setCurrentPage('billing')} style={{padding:'14px 32px',background:'#06b6d4',color:'#04081a',border:'none',borderRadius:'8px',fontSize:'16px',fontWeight:700,cursor:'pointer'}}>Upgrade Now</button>
+    </div>
+  );
   const navItems = [
     { page: 'dashboard', icon: '🏠', label: t('dashboard') },
     { page: 'customers', icon: '👥', label: t('customers') },
@@ -536,15 +561,15 @@ function App() {
     { page: 'invoices', icon: '💰', label: t('invoices') },
     { page: 'billing', icon: '💳', label: t('billing') },
     { page: 'map', icon: '🗺️', label: t('jobMap') },
-    { page: 'inventory', icon: '📦', label: t('inventory') },
-    { page: 'payroll', icon: '💰', label: t('payroll') },
+    { page: 'inventory', icon: '📦', label: t('inventory'), pro: true },
+    { page: 'payroll', icon: '💰', label: t('payroll'), pro: true },
     { page: 'expenses', icon: '📊', label: t('expenses') },
-    { page: 'reports', icon: '📈', label: t('reports') },
-    { page: 'locations', icon: '🏢', label: t('locations') },
+    { page: 'reports', icon: '📈', label: t('reports'), pro: true },
+    { page: 'locations', icon: '🏢', label: t('locations'), pro: true },
     { page: 'taxcenter', icon: '🧾', label: 'Tax Center' },
     { page: 'estimates', icon: '📋', label: t('estimates') },
-    { page: 'maintenance', icon: '🔧', label: t('maintenance') },
-    { page: 'manuals', icon: '📚', label: t('manuals') },
+    { page: 'maintenance', icon: '🔧', label: t('maintenance'), pro: true },
+    { page: 'manuals', icon: '📚', label: t('manuals'), pro: true },
     { page: 'settings', icon: '⚙️', label: t('settings') },
     { page: 'users', icon: '👤', label: t('team') },
   ];
@@ -587,7 +612,7 @@ function App() {
               return item.page !== 'users' || user.role === 'admin';
             }).map(({ page, icon, label }) => (
             <button key={page} onClick={() => setCurrentPage(page)}
-              style={{ width: '100%', padding: '11px 14px', marginBottom: '4px', backgroundColor: currentPage === page ? '#1e40af' : 'transparent', color: currentPage === page ? 'white' : '#94a3b8', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              style={{ width: '100%', padding: '11px 14px', marginBottom: '4px', backgroundColor: currentPage === page ? '#1e40af' : 'transparent', color: currentPage === page ? 'white' : (item.pro && !canAccess(page)) ? '#475569' : '#94a3b8', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'space-between' }}>
               <span>{icon}</span> {label}
             </button>
           ))}
@@ -788,14 +813,14 @@ function App() {
         {currentPage === 'invoices' && user.role !== 'technician' && <Invoices />}
         {currentPage === 'billing' && user.role !== 'technician' && <Billing currentUser={user} />}
         <ErrorBoundary>{currentPage === 'map' && <MapView />}</ErrorBoundary>
-        <ErrorBoundary>{currentPage === 'inventory' && <Inventory user={user} token={localStorage.getItem('token')} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'inventory' && (canAccess('inventory') ? <Inventory user={user} token={localStorage.getItem('token')} /> : <UpgradePrompt feature="Inventory Management" requiredPlan="Pro" />)}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'estimates' && <Estimates user={user} />}</ErrorBoundary>
-        <ErrorBoundary>{currentPage === 'maintenance' && <MaintenancePlans user={user} />}</ErrorBoundary>
-        <ErrorBoundary>{currentPage === 'manuals' && <Manuals user={user} />}</ErrorBoundary>
-        <ErrorBoundary>{currentPage === 'payroll' && <Payroll token={localStorage.getItem('token')} user={user} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'maintenance' && (canAccess('maintenance') ? <MaintenancePlans user={user} /> : <UpgradePrompt feature="Maintenance Plans" requiredPlan="Pro" />)}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'manuals' && (canAccess('manuals') ? <Manuals user={user} /> : <UpgradePrompt feature="Equipment Manuals" requiredPlan="Pro" />)}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'payroll' && (canAccess('payroll') ? <Payroll token={localStorage.getItem('token')} user={user} /> : <UpgradePrompt feature="Payroll & Time Clock" requiredPlan="Pro" />)}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'expenses' && <Expenses token={localStorage.getItem('token')} />}</ErrorBoundary>
-        <ErrorBoundary>{currentPage === 'reports' && <Reports token={localStorage.getItem('token')} />}</ErrorBoundary>
-        <ErrorBoundary>{currentPage === 'locations' && <Locations token={localStorage.getItem('token')} user={user} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'reports' && (canAccess('reports') ? <Reports token={localStorage.getItem('token')} /> : <UpgradePrompt feature="Advanced Reports" requiredPlan="Pro" />)}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'locations' && (canAccess('locations') ? <Locations token={localStorage.getItem('token')} user={user} /> : <UpgradePrompt feature="Multi-Location Support" requiredPlan="Pro" />)}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'taxcenter' && <TaxCenter token={localStorage.getItem('token')} />}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'settings' && <Settings />}</ErrorBoundary>
         {currentPage === 'users' && user.role === 'admin' && <Users />}
