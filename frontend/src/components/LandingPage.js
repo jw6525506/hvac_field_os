@@ -149,39 +149,50 @@ function LandingPage({ onLogin, onSignup }) {
       </section>
 
 
-      <div className="mockup-section">
-        <div className="mockup-wrap">
+
+      {/* APP MOCKUP */}
+      <div style={{padding:'0 48px 100px',background:'#04081a'}}>
+        <div style={{maxWidth:'1100px',margin:'0 auto'}}>
           <div style={{textAlign:'center',fontSize:'12px',fontWeight:700,letterSpacing:'3px',textTransform:'uppercase',color:'#06b6d4',marginBottom:'20px'}}>See it in action</div>
-          <h2 className="mockup-headline">Your entire operation,<br/>in one clean dashboard.</h2>
-          <div className="app-window">
-            <div className="app-titlebar">
-              <div className="app-dot" style={{background:'#ff5f57'}}/>
-              <div className="app-dot" style={{background:'#febc2e'}}/>
-              <div className="app-dot" style={{background:'#28c840'}}/>
-              <div className="app-url">helix8.tech — Dashboard</div>
+          <h2 style={{textAlign:'center',fontFamily:"'Syne',sans-serif",fontSize:'clamp(28px,3.5vw,42px)',fontWeight:800,letterSpacing:'-1px',marginBottom:'48px'}}>Your entire operation,<br/>in one clean dashboard.</h2>
+          <div style={{background:'#0d1426',borderRadius:'16px',border:'1px solid rgba(6,182,212,0.25)',overflow:'hidden',boxShadow:'0 40px 100px rgba(0,0,0,0.6), 0 0 80px rgba(6,182,212,0.05)'}}>
+            <div style={{background:'#0a0f2c',padding:'12px 20px',display:'flex',alignItems:'center',gap:'8px',borderBottom:'1px solid rgba(255,255,255,0.05)'}}>
+              <div style={{width:'12px',height:'12px',borderRadius:'50%',background:'#ff5f57'}}/>
+              <div style={{width:'12px',height:'12px',borderRadius:'50%',background:'#febc2e'}}/>
+              <div style={{width:'12px',height:'12px',borderRadius:'50%',background:'#28c840'}}/>
+              <div style={{flex:1,background:'rgba(255,255,255,0.05)',borderRadius:'6px',padding:'4px 12px',fontSize:'12px',color:'#64748b',textAlign:'center'}}>helix8.tech — Dashboard</div>
             </div>
-            <div className="app-body">
-              <div className="app-sidebar">
-                <div className="app-sidebar-logo">Helix<span>8</span></div>
+            <div style={{display:'grid',gridTemplateColumns:'200px 1fr',minHeight:'400px'}}>
+              <div style={{background:'#0a0f2c',padding:'20px 0',borderRight:'1px solid rgba(255,255,255,0.05)'}}>
+                <div style={{padding:'0 20px 16px',fontFamily:"'Syne',sans-serif",fontSize:'18px',fontWeight:800,color:'white',borderBottom:'1px solid rgba(255,255,255,0.05)',marginBottom:'8px'}}>Helix<span style={{color:'#06b6d4'}}>8</span></div>
                 {[['🏠','Dashboard',true],['👥','Customers',false],['📋','Work Orders',false],['💰','Invoices',false],['📊','Expenses',false],['🧾','Tax Center',false],['🏢','Locations',false],['🔧','Maintenance',false]].map(([icon,label,active])=>(
-                  <div key={label} className={'app-nav-item'+(active?' active':'')}>{icon} {label}</div>
+                  <div key={label} style={{padding:'10px 20px',fontSize:'13px',color:active?'#06b6d4':'#64748b',display:'flex',alignItems:'center',gap:'10px',background:active?'rgba(6,182,212,0.1)':'transparent',borderRight:active?'2px solid #06b6d4':'none'}}>{icon} {label}</div>
                 ))}
               </div>
-              <div className="app-main">
-                <div className="app-header-row">
-                  <div className="app-page-title">Dashboard</div>
-                  <div className="app-btn">+ New Work Order</div>
+              <div style={{padding:'24px'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
+                  <div style={{fontFamily:"'Syne',sans-serif",fontSize:'20px',fontWeight:700}}>Dashboard</div>
+                  <div style={{background:'#06b6d4',color:'#04081a',border:'none',padding:'8px 16px',borderRadius:'6px',fontSize:'12px',fontWeight:700}}>+ New Work Order</div>
                 </div>
-                <div className="app-stats">
+                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'12px',marginBottom:'20px'}}>
                   {[['$31,689','Monthly Revenue'],['12','Active Jobs'],['$5,224','Expenses'],['$6,865','Net Profit']].map(([val,lbl])=>(
-                    <div key={lbl} className="app-stat"><div className="app-stat-val">{val}</div><div className="app-stat-lbl">{lbl}</div></div>
+                    <div key={lbl} style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'10px',padding:'14px'}}>
+                      <div style={{fontFamily:"'Syne',sans-serif",fontSize:'22px',fontWeight:800,color:'#06b6d4'}}>{val}</div>
+                      <div style={{fontSize:'11px',color:'#64748b',marginTop:'2px'}}>{lbl}</div>
+                    </div>
                   ))}
                 </div>
-                <table className="app-table">
-                  <thead><tr><th>Customer</th><th>Job Type</th><th>Technician</th><th>Amount</th><th>Status</th></tr></thead>
+                <table style={{width:'100%',borderCollapse:'collapse'}}>
+                  <thead><tr>{['Customer','Job Type','Technician','Amount','Status'].map(h=><th key={h} style={{fontSize:'11px',color:'#64748b',fontWeight:600,textAlign:'left',padding:'8px 10px',borderBottom:'1px solid rgba(255,255,255,0.05)',textTransform:'uppercase'}}>{h}</th>)}</tr></thead>
                   <tbody>
-                    {[['Carter Roofing','AC Installation','J. Washington','$3,850','done'],['Lopez Plumbing','Water Heater','M. Johnson','$1,200','done'],['Thompson Electric','Panel Upgrade','D. Williams','$4,500','prog'],['Williams HVAC','Tune-Up','J. Washington','$189','sched']].map(([c,j,t,a,s])=>(
-                      <tr key={c}><td style={{fontWeight:600,color:'white'}}>{c}</td><td>{j}</td><td>{t}</td><td style={{color:'#34d399',fontWeight:700}}>{a}</td><td><span className={'app-badge '+s}>{s==='done'?'Completed':s==='prog'?'In Progress':'Scheduled'}</span></td></tr>
+                    {[['Carter Roofing','AC Installation','J. Washington','$3,850','Completed','#22c55e'],['Lopez Plumbing','Water Heater','M. Johnson','$1,200','Completed','#22c55e'],['Thompson Electric','Panel Upgrade','D. Williams','$4,500','In Progress','#eab308'],['Williams HVAC','Tune-Up','J. Washington','$189','Scheduled','#06b6d4']].map(([c,j,t,a,s,sc])=>(
+                      <tr key={c}>
+                        <td style={{fontSize:'12px',padding:'10px',borderBottom:'1px solid rgba(255,255,255,0.03)',fontWeight:600,color:'white'}}>{c}</td>
+                        <td style={{fontSize:'12px',padding:'10px',borderBottom:'1px solid rgba(255,255,255,0.03)',color:'#94a3b8'}}>{j}</td>
+                        <td style={{fontSize:'12px',padding:'10px',borderBottom:'1px solid rgba(255,255,255,0.03)',color:'#94a3b8'}}>{t}</td>
+                        <td style={{fontSize:'12px',padding:'10px',borderBottom:'1px solid rgba(255,255,255,0.03)',color:'#34d399',fontWeight:700}}>{a}</td>
+                        <td style={{fontSize:'12px',padding:'10px',borderBottom:'1px solid rgba(255,255,255,0.03)'}}><span style={{background:`${sc}20`,color:sc,padding:'2px 8px',borderRadius:'10px',fontSize:'10px',fontWeight:700}}>{s}</span></td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
@@ -191,63 +202,74 @@ function LandingPage({ onLogin, onSignup }) {
         </div>
       </div>
 
-      <div className="pain-section">
-        <div className="pain-inner">
+      {/* PAIN VS SOLUTION */}
+      <div style={{padding:'100px 48px',background:'#04081a'}}>
+        <div style={{maxWidth:'1100px',margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'80px',alignItems:'start'}}>
           <div>
-            <div className="section-label">The problem</div>
-            <h2 className="section-title" style={{marginBottom:'40px'}}>Running a trades business<br/>shouldn't be this hard.</h2>
-            <ul className="pain-list">
-              {[['😤','Drowning in paperwork','Invoices on paper, jobs in a notebook, customers in your head. Hours on admin instead of jobs.'],['💸','Overpaying for software','Most field service software charges $300-600 per user per month. A 5-person team pays $3,000/month.'],['📱','Nothing built for the field','Most software is for office workers. Your techs need something that works from a truck.'],['🧾','Tax season is a nightmare','No organized records, no mileage log, scrambling for receipts. Your accountant charges extra for the chaos.']].map(([icon,head,sub])=>(
-                <li key={head}><div className="pain-icon">{icon}</div><div><div className="pain-head">{head}</div><div className="pain-sub">{sub}</div></div></li>
-              ))}
-            </ul>
+            <div style={{fontSize:'12px',fontWeight:700,letterSpacing:'3px',textTransform:'uppercase',color:'#ef4444',marginBottom:'16px'}}>The problem</div>
+            <h2 style={{fontFamily:"'Syne',sans-serif",fontSize:'clamp(28px,3vw,38px)',fontWeight:800,letterSpacing:'-1px',marginBottom:'40px'}}>Running a trades<br/>business is chaos.</h2>
+            {[['😤','Buried in paperwork','Invoices on paper, jobs in a notebook, customers in your head. Hours on admin instead of jobs.'],['💸','Overpaying for software','Most field service software charges $300-600 per user per month. A 5-person team pays $3,000/month.'],['📱','Nothing built for the field','Most software is for office workers. Your techs need something that works from a truck.'],['🧾','Tax season nightmare','No organized records, no mileage log, scrambling for receipts. Your accountant charges extra.']].map(([icon,head,sub])=>(
+              <div key={head} style={{display:'flex',gap:'16px',marginBottom:'28px',alignItems:'flex-start'}}>
+                <div style={{width:'44px',height:'44px',borderRadius:'10px',background:'rgba(239,68,68,0.1)',border:'1px solid rgba(239,68,68,0.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'20px',flexShrink:0}}>{icon}</div>
+                <div><div style={{fontWeight:700,fontSize:'15px',marginBottom:'4px'}}>{head}</div><div style={{fontSize:'13px',color:'#64748b',lineHeight:1.6}}>{sub}</div></div>
+              </div>
+            ))}
           </div>
           <div>
-            <div className="section-label">The solution</div>
-            <h2 className="section-title" style={{marginBottom:'40px'}}>Helix8 fixes all of it<br/>for $99/month flat.</h2>
-            <ul className="pain-list">
-              {[['⚡','Everything in one place','Work orders, invoicing, customers, scheduling, payroll — all connected. Zero paperwork.'],['💰','90% cheaper than the competition','$99/month flat for unlimited users. Save up to $2,900/month vs the competition.'],['📱','Built for the field first','Designed to be used from a phone on a job site. Your techs will actually use it.'],['🧾','Tax-ready all year','Every expense mapped to Schedule C. 1099 tracking. Mileage log. One click export for your accountant.']].map(([icon,head,sub])=>(
-                <li key={head}><div className="pain-icon fix">{icon}</div><div><div className="pain-head">{head}</div><div className="pain-sub">{sub}</div></div></li>
-              ))}
-            </ul>
+            <div style={{fontSize:'12px',fontWeight:700,letterSpacing:'3px',textTransform:'uppercase',color:'#06b6d4',marginBottom:'16px'}}>The solution</div>
+            <h2 style={{fontFamily:"'Syne',sans-serif",fontSize:'clamp(28px,3vw,38px)',fontWeight:800,letterSpacing:'-1px',marginBottom:'40px'}}>Helix8 fixes all of it<br/>for $99/month.</h2>
+            {[['⚡','Everything in one place','Work orders, invoicing, customers, scheduling, payroll — all connected. Zero paperwork.'],['💰','90% cheaper','$99/month flat for unlimited users. Save up to $2,900/month vs the competition.'],['📱','Built for the field','Designed to be used from a phone on a job site. Your techs will actually use it.'],['🧾','Tax-ready all year','Every expense mapped to Schedule C. 1099 tracking. Mileage log. One click CSV export.']].map(([icon,head,sub])=>(
+              <div key={head} style={{display:'flex',gap:'16px',marginBottom:'28px',alignItems:'flex-start'}}>
+                <div style={{width:'44px',height:'44px',borderRadius:'10px',background:'rgba(6,182,212,0.1)',border:'1px solid rgba(6,182,212,0.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'20px',flexShrink:0}}>{icon}</div>
+                <div><div style={{fontWeight:700,fontSize:'15px',marginBottom:'4px'}}>{head}</div><div style={{fontSize:'13px',color:'#64748b',lineHeight:1.6}}>{sub}</div></div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="compare-section">
-        <div className="compare-inner">
-          <div style={{textAlign:'center'}}>
-            <div className="section-label">How we compare</div>
-            <h2 className="section-title">Why contractors are switching<br/>to Helix8.</h2>
+      {/* COMPARISON */}
+      <div style={{padding:'100px 48px',background:'rgba(6,182,212,0.02)',borderTop:'1px solid rgba(6,182,212,0.08)'}}>
+        <div style={{maxWidth:'860px',margin:'0 auto'}}>
+          <div style={{textAlign:'center',marginBottom:'48px'}}>
+            <div style={{fontSize:'12px',fontWeight:700,letterSpacing:'3px',textTransform:'uppercase',color:'#06b6d4',marginBottom:'16px'}}>How we compare</div>
+            <h2 style={{fontFamily:"'Syne',sans-serif",fontSize:'clamp(28px,3.5vw,42px)',fontWeight:800,letterSpacing:'-1px'}}>Why contractors switch<br/>to Helix8.</h2>
           </div>
-          <table className="compare-table">
-            <thead><tr><th></th><th className="helix">Helix8</th><th>Enterprise Software</th><th>Mid-tier Software</th></tr></thead>
-            <tbody>
-              {[['Monthly Price','$99 flat','$300-600/user','$200-350/user'],['Unlimited Users','✅','❌','❌'],['Digital Signatures','✅','✅','✅'],['Tax Center / Schedule C','✅','❌','❌'],['1099 Contractor Tracking','✅','❌','❌'],['Mileage Log','✅','❌','❌'],['Multi-Location Support','✅','✅','❌'],['Full Spanish UI','✅','❌','❌'],['No Setup Fees','✅','❌','❌'],['14-Day Free Trial','✅','❌','✅']].map(([f,h,s,j])=>(
-                <tr key={f}>
-                  <td>{f}</td>
-                  <td className="helix">{h==='✅'?<span className="check">✅</span>:h==='❌'?<span className="cross">❌</span>:<span className="price-hl">{h}</span>}</td>
-                  <td>{s==='✅'?<span className="check">✅</span>:s==='❌'?<span className="cross">❌</span>:s}</td>
-                  <td>{j==='✅'?<span className="check">✅</span>:j==='❌'?<span className="cross">❌</span>:j}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div style={{borderRadius:'16px',overflow:'hidden',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr',background:'#0d1426'}}>
+              <div style={{padding:'16px 20px',fontWeight:700,fontSize:'14px',color:'#64748b'}}></div>
+              <div style={{padding:'16px 20px',textAlign:'center',fontWeight:800,fontSize:'16px',color:'#06b6d4',background:'rgba(6,182,212,0.1)',borderBottom:'2px solid #06b6d4'}}>Helix8</div>
+              <div style={{padding:'16px 20px',textAlign:'center',fontWeight:700,fontSize:'14px',color:'#64748b'}}>Enterprise</div>
+              <div style={{padding:'16px 20px',textAlign:'center',fontWeight:700,fontSize:'14px',color:'#64748b'}}>Mid-tier</div>
+            </div>
+            {[['Monthly Price','$99 flat','$300-600/user','$200-350/user'],['Unlimited Users',true,false,false],['Digital Signatures',true,true,true],['Tax Center / Schedule C',true,false,false],['1099 Contractor Tracking',true,false,false],['Mileage Log',true,false,false],['Multi-Location Support',true,true,false],['Full Spanish UI',true,false,false],['No Setup Fees',true,false,false],['14-Day Free Trial',true,false,true]].map(([f,h,e,m],i)=>(
+              <div key={f} style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr',background:i%2===0?'rgba(255,255,255,0.01)':'transparent',borderTop:'1px solid rgba(255,255,255,0.04)'}}>
+                <div style={{padding:'14px 20px',fontSize:'14px',color:'white',fontWeight:500}}>{f}</div>
+                <div style={{padding:'14px 20px',textAlign:'center',background:'rgba(6,182,212,0.04)'}}>{h===true?<span style={{color:'#22c55e',fontSize:'18px'}}>✅</span>:h===false?<span style={{color:'#ef4444'}}>❌</span>:<span style={{color:'#06b6d4',fontWeight:800,fontSize:'18px'}}>{h}</span>}</div>
+                <div style={{padding:'14px 20px',textAlign:'center'}}>{e===true?<span style={{color:'#22c55e',fontSize:'18px'}}>✅</span>:e===false?<span style={{color:'#ef4444'}}>❌</span>:<span style={{color:'#94a3b8',fontSize:'13px'}}>{e}</span>}</div>
+                <div style={{padding:'14px 20px',textAlign:'center'}}>{m===true?<span style={{color:'#22c55e',fontSize:'18px'}}>✅</span>:m===false?<span style={{color:'#ef4444'}}>❌</span>:<span style={{color:'#94a3b8',fontSize:'13px'}}>{m}</span>}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="proof-section">
-        <div className="proof-inner">
-          <div style={{textAlign:'center'}}>
-            <div className="section-label">What contractors say</div>
-            <h2 className="section-title">Built for tradesmen,<br/>by tradesmen.</h2>
+      {/* TESTIMONIALS */}
+      <div style={{padding:'80px 48px',background:'#04081a'}}>
+        <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+          <div style={{textAlign:'center',marginBottom:'48px'}}>
+            <div style={{fontSize:'12px',fontWeight:700,letterSpacing:'3px',textTransform:'uppercase',color:'#06b6d4',marginBottom:'16px'}}>What contractors say</div>
+            <h2 style={{fontFamily:"'Syne',sans-serif",fontSize:'clamp(28px,3.5vw,42px)',fontWeight:800,letterSpacing:'-1px'}}>Built for tradesmen,<br/>by tradesmen.</h2>
           </div>
-          <div className="proof-grid">
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'24px'}}>
             {[{i:'JC',n:'James Carter',r:'HVAC Contractor, Atlanta GA',t:'I was paying a fortune for enterprise software and only using 20% of it. Switched to Helix8 and cut my software bill by 95%. Same features I actually use, way simpler.'},{i:'MR',n:'Maria Rodriguez',r:'Plumbing Co., Houston TX',t:'Finally software en español. My whole crew uses it now. The work orders and invoicing alone are worth every penny.'},{i:'DT',n:'Derek Thompson',r:'Electrical Contractor, Dallas TX',t:'The tax center alone saves me 10 hours at tax time. Every expense is already categorized. My accountant just downloads the CSV.'}].map((t,idx)=>(
-              <div key={idx} className="proof-card">
-                <div className="proof-stars">★★★★★</div>
-                <div className="proof-text">"{t.t}"</div>
-                <div className="proof-author"><div className="proof-avatar">{t.i}</div><div><div className="proof-name">{t.n}</div><div className="proof-role">{t.r}</div></div></div>
+              <div key={idx} style={{background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'16px',padding:'28px',transition:'all 0.3s'}}>
+                <div style={{color:'#f59e0b',fontSize:'16px',marginBottom:'12px',letterSpacing:'2px'}}>★★★★★</div>
+                <div style={{color:'#cbd5e1',fontSize:'15px',lineHeight:1.7,fontWeight:300,marginBottom:'20px',fontStyle:'italic'}}>"{t.t}"</div>
+                <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
+                  <div style={{width:'40px',height:'40px',borderRadius:'50%',background:'rgba(6,182,212,0.2)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Syne',sans-serif",fontWeight:800,color:'#06b6d4',fontSize:'14px'}}>{t.i}</div>
+                  <div><div style={{fontWeight:700,fontSize:'14px'}}>{t.n}</div><div style={{fontSize:'12px',color:'#64748b'}}>{t.r}</div></div>
+                </div>
               </div>
             ))}
           </div>
