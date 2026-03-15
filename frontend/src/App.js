@@ -26,6 +26,7 @@ import Inventory from './components/Inventory';
 import Expenses from './components/Expenses';
 import Reports from './components/Reports';
 import Locations from './components/Locations';
+import TaxCenter from './components/TaxCenter';
 import BottomNav from './components/BottomNav';
 
 const API_BASE = 'https://hvacfieldos-production.up.railway.app/api';
@@ -540,6 +541,7 @@ function App() {
     { page: 'expenses', icon: '📊', label: t('expenses') },
     { page: 'reports', icon: '📈', label: t('reports') },
     { page: 'locations', icon: '🏢', label: t('locations') },
+    { page: 'taxcenter', icon: '🧾', label: 'Tax Center' },
     { page: 'estimates', icon: '📋', label: t('estimates') },
     { page: 'maintenance', icon: '🔧', label: t('maintenance') },
     { page: 'manuals', icon: '📚', label: t('manuals') },
@@ -794,6 +796,7 @@ function App() {
         <ErrorBoundary>{currentPage === 'expenses' && <Expenses token={localStorage.getItem('token')} />}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'reports' && <Reports token={localStorage.getItem('token')} />}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'locations' && <Locations token={localStorage.getItem('token')} user={user} />}</ErrorBoundary>
+        <ErrorBoundary>{currentPage === 'taxcenter' && <TaxCenter token={localStorage.getItem('token')} />}</ErrorBoundary>
         <ErrorBoundary>{currentPage === 'settings' && <Settings />}</ErrorBoundary>
         {currentPage === 'users' && user.role === 'admin' && <Users />}
       </div>

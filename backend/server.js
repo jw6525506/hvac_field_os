@@ -1964,6 +1964,144 @@ app.get('/api/locations/:id/stats', requireAuth, async (req, res) => {
 });
 
 
+
+// ─── TAX CATEGORIES MAP ───────────────────────────────────────────
+const TAX_CATEGORIES = {
+  'Parts & Materials': { scheduleC: 'Line 22 - Supplies', irs: 'Supplies and materials' },
+  'Tools & Equipment': { scheduleC: 'Line 22 - Supplies', irs: 'Tools and equipment' },
+  'Vehicle & Fuel': { scheduleC: 'Line 9 - Car and truck', irs: 'Car and truck expenses' },
+  'Insurance': { scheduleC: 'Line 15 - Insurance', irs: 'Business insurance premiums' },
+  'Marketing & Advertising': { scheduleC: 'Line 8 - Advertising', irs: 'Advertising and marketing' },
+  'Office & Admin': { scheduleC: 'Line 18 - Office expense', irs: 'Office expenses' },
+  'Subcontractors': { scheduleC: 'Line 11 - Contract labor', irs: 'Contract labor (may require 1099)' },
+  'Utilities': { scheduleC: 'Line 25 - Utilities', irs: 'Business utilities' },
+  'Training & Licenses': { scheduleC: 'Line 27a - Other expenses', irs: 'Education and licenses' },
+  'Other': { scheduleC: 'Line 27a - Other expenses', irs: 'Other business expenses' },
+};
+
+app.get('/api/tax/categories', requireAuth, (req, res) => {
+  res.json(TAX_CATEGORIES);
+});
+
+// ─── TAX EXPORT ───────────────────────────────────────────────────
+app.get('/api/tax/export', requireAuth, async (req, res) => {
+  try {
+    const { year } = req.query;
+    const y = year || new Date().getFullYear();
+    const companyId = req.user.companyId;
+
+    const company = await pool.query('SELECT * FROM "Companies" WHERE id=$1', [companyId]);
+    const revenue = await pool.query(`SELECT COALESCE(SUM(total::numeric),0) as total, COUNT(*) as count FROM "Invoices" WHERE "companyId"=$1 AND status='paid' AND EXTRACT(YEAR FROM "createdAt")=$2`, [companyId, y]);
+    const expenses = await pool.query(`SELECT category, "taxCategory", SUM(amount) as total, COUNT(*) as count FROM "Expenses" WHERE "companyId"=$1 AND EXTRACT(YEAR FROM date)=$2 GROUP BY category, "taxCategory" ORDER BY total DESC`, [companyId, y]);
+    const mileage = await pool.query(`SELECT SUM(miles) as total_miles, SUM("deductionAmount") as total_deduction FROM "MileageLog" WHERE "companyId"=$1 AND EXTRACT(YEAR FROM date)=$2`, [companyId, y]);
+    const contractors = await pool.query(`SELECT * FROM "Contractors1099" WHERE "companyId"=$1 AND year=$2 ORDER BY "totalPaid" DESC`, [companyId, y]);
+
+    const totalExpenses = expenses.rows.reduce((sum, e) => sum + parseFloat(e.total || 0), 0);
+    const netProfit = parseFloat(revenue.rows[0].total) - totalExpenses;
+
+    res.json({
+      company: company.rows[0],
+      year: y,
+      summary: {
+        totalRevenue: parseFloat(revenue.rows[0].total),
+        invoiceCount: parseInt(revenue.rows[0].count),
+        totalExpenses,
+        netProfit,
+        totalMiles: parseFloat(mileage.rows[0]?.total_miles || 0),
+        mileageDeduction: parseFloat(mileage.rows[0]?.total_deduction || 0),
+      },
+      expensesByCategory: expenses.rows.map(e => ({
+        category: e.category,
+        taxCategory: e.taxCategory || TAX_CATEGORIES[e.category]?.scheduleC || 'Line 27a - Other expenses',
+        irsDescription: TAX_CATEGORIES[e.category]?.irs || 'Other business expenses',
+        total: parseFloat(e.total),
+        count: parseInt(e.count)
+      })),
+      contractors1099: contractors.rows,
+    });
+  } catch (err) { console.error('Tax export error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+// ─── 1099 CONTRACTORS ─────────────────────────────────────────────
+app.get('/api/contractors-1099', requireAuth, async (req, res) => {
+  try {
+    const { year } = req.query;
+    const y = year || new Date().getFullYear();
+    const result = await pool.query('SELECT * FROM "Contractors1099" WHERE "companyId"=$1 AND year=$2 ORDER BY "totalPaid" DESC', [req.user.companyId, y]);
+    res.json(result.rows);
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+app.post('/api/contractors-1099', requireAuth, async (req, res) => {
+  try {
+    const { firstName, lastName, company, email, phone, address, city, state, zip, taxId, totalPaid, year, notes } = req.body;
+    const y = year || new Date().getFullYear();
+    const requires1099 = parseFloat(totalPaid || 0) >= 600;
+    const result = await pool.query(
+      `INSERT INTO "Contractors1099" ("companyId","firstName","lastName",company,email,phone,address,city,state,zip,"taxId","totalPaid",year,"requires1099",notes,"createdAt","updatedAt")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NOW(),NOW()) RETURNING *`,
+      [req.user.companyId, firstName, lastName, company||null, email||null, phone||null, address||null, city||null, state||null, zip||null, taxId||null, totalPaid||0, y, requires1099, notes||null]
+    );
+    res.json(result.rows[0]);
+  } catch (err) { console.error('1099 error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+app.put('/api/contractors-1099/:id', requireAuth, async (req, res) => {
+  try {
+    const { firstName, lastName, company, email, phone, address, city, state, zip, taxId, totalPaid, notes } = req.body;
+    const requires1099 = parseFloat(totalPaid || 0) >= 600;
+    const result = await pool.query(
+      `UPDATE "Contractors1099" SET "firstName"=$1,"lastName"=$2,company=$3,email=$4,phone=$5,address=$6,city=$7,state=$8,zip=$9,"taxId"=$10,"totalPaid"=$11,"requires1099"=$12,notes=$13,"updatedAt"=NOW()
+       WHERE id=$14 AND "companyId"=$15 RETURNING *`,
+      [firstName, lastName, company||null, email||null, phone||null, address||null, city||null, state||null, zip||null, taxId||null, totalPaid||0, requires1099, notes||null, req.params.id, req.user.companyId]
+    );
+    res.json(result.rows[0]);
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+app.delete('/api/contractors-1099/:id', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM "Contractors1099" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    res.json({ message: 'Deleted' });
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+// ─── MILEAGE LOG ──────────────────────────────────────────────────
+app.get('/api/mileage', requireAuth, async (req, res) => {
+  try {
+    const { year, month } = req.query;
+    let query = `SELECT m.*, u."firstName"||' '||u."lastName" as driver FROM "MileageLog" m LEFT JOIN "Users" u ON u.id=m."userId" WHERE m."companyId"=$1`;
+    const params = [req.user.companyId];
+    if (year) { params.push(year); query += ` AND EXTRACT(YEAR FROM m.date)=$${params.length}`; }
+    if (month) { params.push(month); query += ` AND EXTRACT(MONTH FROM m.date)=$${params.length}`; }
+    query += ' ORDER BY m.date DESC';
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+app.post('/api/mileage', requireAuth, async (req, res) => {
+  try {
+    const { date, startLocation, endLocation, miles, purpose, customerId, workOrderId } = req.body;
+    const IRS_RATE = 0.67;
+    const deductionAmount = parseFloat(miles || 0) * IRS_RATE;
+    const result = await pool.query(
+      `INSERT INTO "MileageLog" ("companyId","userId",date,"startLocation","endLocation",miles,purpose,"customerId","workOrderId","deductionAmount","createdAt","updatedAt")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW()) RETURNING *`,
+      [req.user.companyId, req.user.id, date, startLocation||null, endLocation||null, miles, purpose||null, customerId||null, workOrderId||null, deductionAmount]
+    );
+    res.json(result.rows[0]);
+  } catch (err) { console.error('Mileage error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
+app.delete('/api/mileage/:id', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM "MileageLog" WHERE id=$1 AND "companyId"=$2', [req.params.id, req.user.companyId]);
+    res.json({ message: 'Deleted' });
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+
 app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.method} ${req.path} not found` });
 });
