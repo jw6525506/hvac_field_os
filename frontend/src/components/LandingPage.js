@@ -148,6 +148,112 @@ function LandingPage({ onLogin, onSignup }) {
         </div>
       </section>
 
+
+      <div className="mockup-section">
+        <div className="mockup-wrap">
+          <div style={{textAlign:'center',fontSize:'12px',fontWeight:700,letterSpacing:'3px',textTransform:'uppercase',color:'#06b6d4',marginBottom:'20px'}}>See it in action</div>
+          <h2 className="mockup-headline">Your entire operation,<br/>in one clean dashboard.</h2>
+          <div className="app-window">
+            <div className="app-titlebar">
+              <div className="app-dot" style={{background:'#ff5f57'}}/>
+              <div className="app-dot" style={{background:'#febc2e'}}/>
+              <div className="app-dot" style={{background:'#28c840'}}/>
+              <div className="app-url">helix8.tech — Dashboard</div>
+            </div>
+            <div className="app-body">
+              <div className="app-sidebar">
+                <div className="app-sidebar-logo">Helix<span>8</span></div>
+                {[['🏠','Dashboard',true],['👥','Customers',false],['📋','Work Orders',false],['💰','Invoices',false],['📊','Expenses',false],['🧾','Tax Center',false],['🏢','Locations',false],['🔧','Maintenance',false]].map(([icon,label,active])=>(
+                  <div key={label} className={'app-nav-item'+(active?' active':'')}>{icon} {label}</div>
+                ))}
+              </div>
+              <div className="app-main">
+                <div className="app-header-row">
+                  <div className="app-page-title">Dashboard</div>
+                  <div className="app-btn">+ New Work Order</div>
+                </div>
+                <div className="app-stats">
+                  {[['$31,689','Monthly Revenue'],['12','Active Jobs'],['$5,224','Expenses'],['$6,865','Net Profit']].map(([val,lbl])=>(
+                    <div key={lbl} className="app-stat"><div className="app-stat-val">{val}</div><div className="app-stat-lbl">{lbl}</div></div>
+                  ))}
+                </div>
+                <table className="app-table">
+                  <thead><tr><th>Customer</th><th>Job Type</th><th>Technician</th><th>Amount</th><th>Status</th></tr></thead>
+                  <tbody>
+                    {[['Carter Roofing','AC Installation','J. Washington','$3,850','done'],['Lopez Plumbing','Water Heater','M. Johnson','$1,200','done'],['Thompson Electric','Panel Upgrade','D. Williams','$4,500','prog'],['Williams HVAC','Tune-Up','J. Washington','$189','sched']].map(([c,j,t,a,s])=>(
+                      <tr key={c}><td style={{fontWeight:600,color:'white'}}>{c}</td><td>{j}</td><td>{t}</td><td style={{color:'#34d399',fontWeight:700}}>{a}</td><td><span className={'app-badge '+s}>{s==='done'?'Completed':s==='prog'?'In Progress':'Scheduled'}</span></td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="pain-section">
+        <div className="pain-inner">
+          <div>
+            <div className="section-label">The problem</div>
+            <h2 className="section-title" style={{marginBottom:'40px'}}>Running a trades business<br/>shouldn't be this hard.</h2>
+            <ul className="pain-list">
+              {[['😤','Drowning in paperwork','Invoices on paper, jobs in a notebook, customers in your head. Hours on admin instead of jobs.'],['💸','Overpaying for software','ServiceTitan charges $300-600 per user per month. A 5-person team pays $3,000/month.'],['📱','Nothing built for the field','Most software is for office workers. Your techs need something that works from a truck.'],['🧾','Tax season is a nightmare','No organized records, no mileage log, scrambling for receipts. Your accountant charges extra for the chaos.']].map(([icon,head,sub])=>(
+                <li key={head}><div className="pain-icon">{icon}</div><div><div className="pain-head">{head}</div><div className="pain-sub">{sub}</div></div></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <div className="section-label">The solution</div>
+            <h2 className="section-title" style={{marginBottom:'40px'}}>Helix8 fixes all of it<br/>for $99/month flat.</h2>
+            <ul className="pain-list">
+              {[['⚡','Everything in one place','Work orders, invoicing, customers, scheduling, payroll — all connected. Zero paperwork.'],['💰','90% cheaper than the competition','$99/month flat for unlimited users. Save $2,900/month vs ServiceTitan.'],['📱','Built for the field first','Designed to be used from a phone on a job site. Your techs will actually use it.'],['🧾','Tax-ready all year','Every expense mapped to Schedule C. 1099 tracking. Mileage log. One click export for your accountant.']].map(([icon,head,sub])=>(
+                <li key={head}><div className="pain-icon fix">{icon}</div><div><div className="pain-head">{head}</div><div className="pain-sub">{sub}</div></div></li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="compare-section">
+        <div className="compare-inner">
+          <div style={{textAlign:'center'}}>
+            <div className="section-label">How we compare</div>
+            <h2 className="section-title">Why contractors are switching<br/>to Helix8.</h2>
+          </div>
+          <table className="compare-table">
+            <thead><tr><th></th><th className="helix">Helix8</th><th>ServiceTitan</th><th>Jobber</th></tr></thead>
+            <tbody>
+              {[['Monthly Price','$99 flat','$300-600/user','$200-350/user'],['Unlimited Users','✅','❌','❌'],['Digital Signatures','✅','✅','✅'],['Tax Center / Schedule C','✅','❌','❌'],['1099 Contractor Tracking','✅','❌','❌'],['Mileage Log','✅','❌','❌'],['Multi-Location Support','✅','✅','❌'],['Full Spanish UI','✅','❌','❌'],['No Setup Fees','✅','❌','❌'],['14-Day Free Trial','✅','❌','✅']].map(([f,h,s,j])=>(
+                <tr key={f}>
+                  <td>{f}</td>
+                  <td className="helix">{h==='✅'?<span className="check">✅</span>:h==='❌'?<span className="cross">❌</span>:<span className="price-hl">{h}</span>}</td>
+                  <td>{s==='✅'?<span className="check">✅</span>:s==='❌'?<span className="cross">❌</span>:s}</td>
+                  <td>{j==='✅'?<span className="check">✅</span>:j==='❌'?<span className="cross">❌</span>:j}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="proof-section">
+        <div className="proof-inner">
+          <div style={{textAlign:'center'}}>
+            <div className="section-label">What contractors say</div>
+            <h2 className="section-title">Built for tradesmen,<br/>by tradesmen.</h2>
+          </div>
+          <div className="proof-grid">
+            {[{i:'JC',n:'James Carter',r:'HVAC Contractor, Atlanta GA',t:'I was paying $1,800/month for ServiceTitan and only using 20% of it. Switched to Helix8 and cut my software bill by 95%. Same features I actually use, way simpler.'},{i:'MR',n:'Maria Rodriguez',r:'Plumbing Co., Houston TX',t:'Finally software en español. My whole crew uses it now. The work orders and invoicing alone are worth every penny.'},{i:'DT',n:'Derek Thompson',r:'Electrical Contractor, Dallas TX',t:'The tax center alone saves me 10 hours at tax time. Every expense is already categorized. My accountant just downloads the CSV.'}].map((t,idx)=>(
+              <div key={idx} className="proof-card">
+                <div className="proof-stars">★★★★★</div>
+                <div className="proof-text">"{t.t}"</div>
+                <div className="proof-author"><div className="proof-avatar">{t.i}</div><div><div className="proof-name">{t.n}</div><div className="proof-role">{t.r}</div></div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div style={{background: "#04081a"}}>
         <div className="section">
           <div className="section-label">Everything you need</div>
