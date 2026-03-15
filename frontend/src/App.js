@@ -542,6 +542,8 @@ function App() {
 
   const canAccess = (page) => {
     if (isTech) return ['workorders','map'].includes(page);
+    // Demo account always has full access
+    if (user?.companyId === 1) return true;
     const allowed = PLAN_FEATURES[plan] || PLAN_FEATURES['trial'];
     return allowed.includes(page);
   };
