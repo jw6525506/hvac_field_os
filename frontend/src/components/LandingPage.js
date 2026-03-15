@@ -157,10 +157,22 @@ function LandingPage({ onLogin, onSignup }) {
             {[
               {icon:"👥", title:"Customer Management", desc:"Store every customer, their history, and contact info in one place. Import your existing list in seconds."},
               {icon:"📋", title:"Work Orders", desc:"Create and assign jobs to your techs. They see their schedule on their phone and update status in real time."},
-              {icon:"💰", title:"Invoicing", desc:"Generate professional invoices and email them directly to customers with one click. Get paid faster."},
+              {icon:"💰", title:"Invoicing & Estimates", desc:"Generate professional invoices and estimates, email them directly to customers with one click. Get paid faster."},
+              {icon:"✍️", title:"Digital Signatures", desc:"Customers sign work orders and estimates right on their phone. No paper, no printing, saved permanently."},
               {icon:"📷", title:"Photo Uploads", desc:"Techs upload before and after photos directly from the job site. Proof of work, every time."},
               {icon:"🗺️", title:"Job Map", desc:"See all your scheduled jobs plotted on a live map. Know where every tech is working today."},
+              {icon:"💸", title:"Expense Tracking", desc:"Log every business expense by IRS category. Replace QuickBooks with one $99/month subscription."},
+              {icon:"🧾", title:"Tax Center", desc:"Schedule C mapping, 1099 contractor tracking, mileage log at $0.67/mile. One click CSV export for your accountant."},
+              {icon:"📊", title:"Financial Reports", desc:"Full profit and loss report by month. Revenue vs expenses vs net profit. Know your numbers at a glance."},
+              {icon:"📈", title:"Technician Reports", desc:"See every tech's jobs completed, hours worked, completion rate, and revenue generated."},
+              {icon:"🔧", title:"Maintenance Plans", desc:"Create recurring service agreements. Build predictable monthly revenue from your existing customers."},
+              {icon:"📦", title:"Inventory Management", desc:"Track your parts and supplies by truck or location. Get alerts when stock runs low."},
+              {icon:"💼", title:"Payroll & Time Clock", desc:"Techs clock in and out from their phone. Calculate hours and pay automatically every week."},
+              {icon:"📚", title:"Equipment Manuals", desc:"Upload and store equipment manuals, warranties, and service documents. Access them from the field."},
+              {icon:"🏢", title:"Multi-Location Support", desc:"Manage multiple branches from one login. Each location has its own team, jobs, and reporting."},
+              {icon:"🌎", title:"English & Spanish", desc:"Full bilingual support. Switch the entire platform to Spanish in one click. Built for every contractor."},
               {icon:"📱", title:"Mobile Friendly", desc:"Works on any phone or tablet. Your techs don't need to download anything — just open the browser."},
+              {icon:"🔒", title:"Secure & Reliable", desc:"Bank-level security, automatic backups, 99.9% uptime. Your data is always safe and accessible."},
             ].map((f,i) => (
               <div className="feature-card" key={i}>
                 <div className="feature-icon">{f.icon}</div>
