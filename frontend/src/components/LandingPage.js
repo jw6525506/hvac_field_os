@@ -197,7 +197,7 @@ function LandingPage({ onLogin, onSignup }) {
             <div className="section-label">The problem</div>
             <h2 className="section-title" style={{marginBottom:'40px'}}>Running a trades business<br/>shouldn't be this hard.</h2>
             <ul className="pain-list">
-              {[['😤','Drowning in paperwork','Invoices on paper, jobs in a notebook, customers in your head. Hours on admin instead of jobs.'],['💸','Overpaying for software','ServiceTitan charges $300-600 per user per month. A 5-person team pays $3,000/month.'],['📱','Nothing built for the field','Most software is for office workers. Your techs need something that works from a truck.'],['🧾','Tax season is a nightmare','No organized records, no mileage log, scrambling for receipts. Your accountant charges extra for the chaos.']].map(([icon,head,sub])=>(
+              {[['😤','Drowning in paperwork','Invoices on paper, jobs in a notebook, customers in your head. Hours on admin instead of jobs.'],['💸','Overpaying for software','Most field service software charges $300-600 per user per month. A 5-person team pays $3,000/month.'],['📱','Nothing built for the field','Most software is for office workers. Your techs need something that works from a truck.'],['🧾','Tax season is a nightmare','No organized records, no mileage log, scrambling for receipts. Your accountant charges extra for the chaos.']].map(([icon,head,sub])=>(
                 <li key={head}><div className="pain-icon">{icon}</div><div><div className="pain-head">{head}</div><div className="pain-sub">{sub}</div></div></li>
               ))}
             </ul>
@@ -206,7 +206,7 @@ function LandingPage({ onLogin, onSignup }) {
             <div className="section-label">The solution</div>
             <h2 className="section-title" style={{marginBottom:'40px'}}>Helix8 fixes all of it<br/>for $99/month flat.</h2>
             <ul className="pain-list">
-              {[['⚡','Everything in one place','Work orders, invoicing, customers, scheduling, payroll — all connected. Zero paperwork.'],['💰','90% cheaper than the competition','$99/month flat for unlimited users. Save $2,900/month vs ServiceTitan.'],['📱','Built for the field first','Designed to be used from a phone on a job site. Your techs will actually use it.'],['🧾','Tax-ready all year','Every expense mapped to Schedule C. 1099 tracking. Mileage log. One click export for your accountant.']].map(([icon,head,sub])=>(
+              {[['⚡','Everything in one place','Work orders, invoicing, customers, scheduling, payroll — all connected. Zero paperwork.'],['💰','90% cheaper than the competition','$99/month flat for unlimited users. Save up to $2,900/month vs the competition.'],['📱','Built for the field first','Designed to be used from a phone on a job site. Your techs will actually use it.'],['🧾','Tax-ready all year','Every expense mapped to Schedule C. 1099 tracking. Mileage log. One click export for your accountant.']].map(([icon,head,sub])=>(
                 <li key={head}><div className="pain-icon fix">{icon}</div><div><div className="pain-head">{head}</div><div className="pain-sub">{sub}</div></div></li>
               ))}
             </ul>
@@ -221,7 +221,7 @@ function LandingPage({ onLogin, onSignup }) {
             <h2 className="section-title">Why contractors are switching<br/>to Helix8.</h2>
           </div>
           <table className="compare-table">
-            <thead><tr><th></th><th className="helix">Helix8</th><th>ServiceTitan</th><th>Jobber</th></tr></thead>
+            <thead><tr><th></th><th className="helix">Helix8</th><th>Enterprise Software</th><th>Mid-tier Software</th></tr></thead>
             <tbody>
               {[['Monthly Price','$99 flat','$300-600/user','$200-350/user'],['Unlimited Users','✅','❌','❌'],['Digital Signatures','✅','✅','✅'],['Tax Center / Schedule C','✅','❌','❌'],['1099 Contractor Tracking','✅','❌','❌'],['Mileage Log','✅','❌','❌'],['Multi-Location Support','✅','✅','❌'],['Full Spanish UI','✅','❌','❌'],['No Setup Fees','✅','❌','❌'],['14-Day Free Trial','✅','❌','✅']].map(([f,h,s,j])=>(
                 <tr key={f}>
@@ -243,7 +243,7 @@ function LandingPage({ onLogin, onSignup }) {
             <h2 className="section-title">Built for tradesmen,<br/>by tradesmen.</h2>
           </div>
           <div className="proof-grid">
-            {[{i:'JC',n:'James Carter',r:'HVAC Contractor, Atlanta GA',t:'I was paying $1,800/month for ServiceTitan and only using 20% of it. Switched to Helix8 and cut my software bill by 95%. Same features I actually use, way simpler.'},{i:'MR',n:'Maria Rodriguez',r:'Plumbing Co., Houston TX',t:'Finally software en español. My whole crew uses it now. The work orders and invoicing alone are worth every penny.'},{i:'DT',n:'Derek Thompson',r:'Electrical Contractor, Dallas TX',t:'The tax center alone saves me 10 hours at tax time. Every expense is already categorized. My accountant just downloads the CSV.'}].map((t,idx)=>(
+            {[{i:'JC',n:'James Carter',r:'HVAC Contractor, Atlanta GA',t:'I was paying a fortune for enterprise software and only using 20% of it. Switched to Helix8 and cut my software bill by 95%. Same features I actually use, way simpler.'},{i:'MR',n:'Maria Rodriguez',r:'Plumbing Co., Houston TX',t:'Finally software en español. My whole crew uses it now. The work orders and invoicing alone are worth every penny.'},{i:'DT',n:'Derek Thompson',r:'Electrical Contractor, Dallas TX',t:'The tax center alone saves me 10 hours at tax time. Every expense is already categorized. My accountant just downloads the CSV.'}].map((t,idx)=>(
               <div key={idx} className="proof-card">
                 <div className="proof-stars">★★★★★</div>
                 <div className="proof-text">"{t.t}"</div>
