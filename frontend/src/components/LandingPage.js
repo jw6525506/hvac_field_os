@@ -124,7 +124,7 @@ function LandingPage({ onLogin, onSignup }) {
     <div className="landing">
       <style>{styles}</style>
       <nav className={"nav" + (scrolled ? " scrolled" : "")}>
-        <div className="nav-logo">Helix<span>8</span></div>
+        <div className="nav-logo"><img src="/helix8-logo.png" alt="Helix8" style={{height:"40px",marginRight:"8px",verticalAlign:"middle"}}/>Helix<span>8</span></div>
         <div className="nav-actions">
           <button className="btn-ghost" onClick={onLogin}>Log In</button>
           <button className="btn-primary" onClick={onSignup}>Start Free Trial</button>
@@ -422,7 +422,7 @@ function LandingPage({ onLogin, onSignup }) {
         <p style={{ color: '#06b6d4', fontSize: '20px', fontWeight: '700', fontStyle: 'italic', margin: 0 }}>"Built for tradesmen, by tradesmen."</p>
       </div>
       <footer className="footer">
-        <div className="footer-logo">Helix<span>8</span></div>
+        <div className="footer-logo"><img src="/helix8-logo.png" alt="Helix8" style={{height:"48px",marginBottom:"8px"}}/><br/>Helix<span>8</span></div>
         <div className="footer-copy">© 2026 Helix8 by Octave Labs. Built for trades professionals.</div>
         <div style={{ marginTop: '12px', display: 'flex', gap: '24px', justifyContent: 'center' }}>
           <a href="/privacy" style={{ color: '#64748b', fontSize: '13px', textDecoration: 'none' }}>Privacy Policy</a>
