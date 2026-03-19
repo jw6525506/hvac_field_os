@@ -16,6 +16,8 @@ function Payroll({ token: tokenProp, user }) {
 
   const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (token || localStorage.getItem('token')) };
 
+  const isTech = user?.role === 'technician';
+
   const fetchAll = useCallback(async () => {
     try {
       const [statusRes, summaryRes, entriesRes] = await Promise.all([
@@ -24,8 +26,16 @@ function Payroll({ token: tokenProp, user }) {
         fetch(`${API_BASE}/timeclock/entries?startDate=${startDate}&endDate=${endDate}`, { headers }),
       ]);
       setClockStatus(await statusRes.json());
-      setSummary((await summaryRes.json()).summary || []);
-      setEntries((await entriesRes.json()).entries || []);
+      const summaryData = (await summaryRes.json()).summary || [];
+      const entriesData = (await entriesRes.json()).entries || [];
+      // Technicians only see their own data
+      if (user?.role === 'technician') {
+        setSummary(summaryData.filter(s => s.email === user.email));
+        setEntries(entriesData.filter(e => e.userId === user.id));
+      } else {
+        setSummary(summaryData);
+        setEntries(entriesData);
+      }
     } catch (err) { console.error(err); }
     setLoading(false);
   }, [startDate, endDate, token]);
