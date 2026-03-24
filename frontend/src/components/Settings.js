@@ -139,6 +139,34 @@ function Settings() {
         </div>
       </div>
 
+
+      {/* Delete Account */}
+      <div style={{...S.card, border: '1px solid #fecaca', background: '#fff5f5', marginTop: '24px'}}>
+        <h2 style={{...S.cardTitle, color: '#dc2626'}}>⚠️ Danger Zone</h2>
+        <p style={{fontSize: '14px', color: '#64748b', marginBottom: '16px'}}>
+          Permanently delete your account and all associated data. This action cannot be undone.
+        </p>
+        <button onClick={() => {
+          if (window.confirm('Are you absolutely sure? This will permanently delete your company, all customers, work orders, invoices, and data. This cannot be undone.')) {
+            if (window.confirm('Last warning — this is permanent. Type OK to confirm.')) {
+              fetch('https://hvacfieldos-production.up.railway.app/api/account/delete', {
+                method: 'DELETE',
+                headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+              }).then(res => {
+                if (res.ok) {
+                  localStorage.clear();
+                  window.location.href = '/';
+                } else {
+                  alert('Error deleting account. Please contact support.');
+                }
+              });
+            }
+          }
+        }} style={{padding: '12px 24px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px'}}>
+          Delete My Account
+        </button>
+      </div>
+
       <button style={S.saveBtn} onClick={handleSave} disabled={saving}>
         {saving ? 'Saving...' : '💾 Save Branding'}
       </button>

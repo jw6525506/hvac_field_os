@@ -2102,6 +2102,37 @@ app.delete('/api/mileage/:id', requireAuth, async (req, res) => {
 });
 
 
+
+// ─── DELETE ACCOUNT ───────────────────────────────────────────────
+app.delete('/api/account/delete', requireAuth, async (req, res) => {
+  try {
+    const companyId = req.user.companyId;
+    // Prevent deleting the demo account
+    if (companyId === 1) return res.status(403).json({ message: 'Cannot delete demo account' });
+
+    await pool.query('DELETE FROM "MaintenanceSubscriptions" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "MaintenancePlans" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "TimeEntries" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Expenses" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "MileageLog" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Contractors1099" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Invoices" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "WorkOrders" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Customers" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Inventory" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Estimates" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Manuals" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Locations" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Subscriptions" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "TwoFactorCodes" WHERE "userId" IN (SELECT id FROM "Users" WHERE "companyId"=$1)', [companyId]);
+    await pool.query('DELETE FROM "PasswordResets" WHERE email IN (SELECT email FROM "Users" WHERE "companyId"=$1)', [companyId]);
+    await pool.query('DELETE FROM "Users" WHERE "companyId"=$1', [companyId]);
+    await pool.query('DELETE FROM "Companies" WHERE id=$1', [companyId]);
+
+    res.json({ message: 'Account deleted successfully' });
+  } catch (err) { console.error('Delete account error:', err.message); res.status(500).json({ message: 'Server error' }); }
+});
+
 app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.method} ${req.path} not found` });
 });
